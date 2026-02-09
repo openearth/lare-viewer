@@ -10,11 +10,32 @@
         width="80px"
       />
     </v-list-item>
+    <v-list-item
+      title="Area"
+      append-icon="mdi-checkbox-blank-outline"
+      @click="handleMenuClick('area')"
+    />
+    <v-list-item
+      title="Hazard"
+      append-icon="mdi-checkbox-blank-outline"
+      @click="handleMenuClick('hazard')"
+    />
   </v-navigation-drawer>
+  <area-menu />
+  <hazard-menu />
 </template>
 
 <script setup>
+import { useAppStore } from '@/stores/app'
+import AreaMenu from '@/components/AreaMenu.vue'
+import HazardMenu from '@/components/HazardMenu.vue'
+
 const logoPath = '/desirmed_logo.png'
+const store = useAppStore()
+
+const handleMenuClick = (menuName) => {
+  store.toggleMenu(menuName)
+}
 </script>
 
 <style scoped>

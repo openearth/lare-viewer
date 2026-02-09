@@ -12,6 +12,9 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
+    AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
+    copy: typeof import('./src/components/HazardMenu.vue')['default']
+    HazardMenu: typeof import('./src/components/HazardMenu.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
     NavigationDrawer: typeof import('./src/components/NavigationDrawer.vue')['default']
