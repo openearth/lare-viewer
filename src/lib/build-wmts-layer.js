@@ -34,32 +34,32 @@ function buildWmtsLayer ({
 
   return format === 'application/vnd.mapbox-vector-tile'
     ? {
-        'id': layer.split(':')[1],
-        layer,
-        'type': vectorType,
-        'source': {
-          type: 'vector',
-          tiles: [tile],
-          ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
-        },
-        'source-layer': layer.split(':')[1],
-        paint,
-        ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom }),
-      }
+      'id': layer.split(':')[1],
+      layer,
+      'type': vectorType,
+      'source': {
+        type: 'vector',
+        tiles: [ tile ],
+        ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
+      },
+      'source-layer': layer.split(':')[1],
+      paint,
+      ...(minZoom && { minzoom: minZoom }),
+      ...(maxZoom && { maxzoom: maxZoom }),
+    }
     : {
-        id,
-        layer,
+      id,
+      layer,
+      type: 'raster',
+      source: {
         type: 'raster',
-        source: {
-          type: 'raster',
-          tiles: [tile],
-          tileSize: 256,
-          ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
-        },
-        ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom }),
-      }
+        tiles: [ tile ],
+        tileSize: 256,
+        ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
+      },
+      ...(minZoom && { minzoom: minZoom }),
+      ...(maxZoom && { maxzoom: maxZoom }),
+    }
 }
 
 export default buildWmtsLayer

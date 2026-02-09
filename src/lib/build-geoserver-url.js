@@ -7,5 +7,5 @@ export default function buildGeoserverUrl ({ url, service, request, encode = tru
 
   const params = queryString.stringify({ service, request, ...rest }, { encode, sort: false })
 
-  return `${url}?${params}`
+  return `${ url }?${ params }`
 }

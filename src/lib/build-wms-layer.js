@@ -32,7 +32,7 @@ export default ({ url: rawUrl = defaultUrl, id, layer, styles = '', paint = {}, 
     type: 'raster',
     source: {
       type: 'raster',
-      tiles: [tile],
+      tiles: [ tile ],
       tileSize,
     },
     paint,
