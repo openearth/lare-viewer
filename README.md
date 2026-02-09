@@ -1,79 +1,116 @@
-# Vuetify (Default)
+# LARE Viewer
 
-This is the official scaffolding tool for Vuetify, designed to give you a head start in building your new Vuetify application. It sets up a base template with all the necessary configurations and standard directory structure, enabling you to begin development without the hassle of setting up the project from scratch.
+A modern web-based map viewer application built with Vue 3, Vuetify, and Mapbox GL. This application provides an interactive mapping interface for viewing geographic data and map services.
 
-## ❗️ Important Links
+## Features
 
-- 📄 [Docs](https://vuetifyjs.com/)
-- 🚨 [Issues](https://issues.vuetifyjs.com/)
-- 🏬 [Store](https://store.vuetifyjs.com/)
-- 🎮 [Playground](https://play.vuetifyjs.com/)
-- 💬 [Discord](https://community.vuetifyjs.com)
+- 🗺️ **Interactive Map Viewing**: Powered by Mapbox GL for smooth, interactive map experiences
+- 🌐 **OGC Services Support**: Full support for OGC (Open Geospatial Consortium) services - layers on the map and background processes are all OGC services
+- 🎨 **Modern UI**: Built with Vuetify 3 for a beautiful, responsive user interface
+- ⚡ **Fast Development**: Leverages Vite for instant hot module replacement and fast builds
+- 🗃️ **State Management**: Uses Pinia for efficient state management
+- 🚦 **Routing**: Vue Router for seamless navigation
 
-## 💿 Install
+## Prerequisites
 
-Set up your project using your preferred package manager. Use the corresponding command to install the dependencies:
+Before you begin, ensure you have the following installed:
 
-| Package Manager                                                | Command        |
-|---------------------------------------------------------------|----------------|
-| [yarn](https://yarnpkg.com/getting-started)                   | `yarn install` |
-| [npm](https://docs.npmjs.com/cli/v7/commands/npm-install)     | `npm install`  |
-| [pnpm](https://pnpm.io/installation)                          | `pnpm install` |
-| [bun](https://bun.sh/#getting-started)                        | `bun install`  |
+- **Node.js** (v18 or higher recommended)
+- **npm** package manager
+- **Mapbox Access Token** - Get one for free at [mapbox.com](https://account.mapbox.com/)
 
-After completing the installation, your environment is ready for Vuetify development.
+## Setup
 
-## ✨ Features
-
-- 🖼️ **Optimized Front-End Stack**: Leverage the latest Vue 3 and Vuetify 3 for a modern, reactive UI development experience. [Vue 3](https://v3.vuejs.org/) | [Vuetify 3](https://vuetifyjs.com/en/)
-- 🗃️ **State Management**: Integrated with [Pinia](https://pinia.vuejs.org/), the intuitive, modular state management solution for Vue.
-- 🚦 **Routing and Layouts**: Utilizes Vue Router for SPA navigation and vite-plugin-vue-layouts for organizing Vue file layouts. [Vue Router](https://router.vuejs.org/) | [vite-plugin-vue-layouts](https://github.com/JohnCampionJr/vite-plugin-vue-layouts)
-- ⚡ **Next-Gen Tooling**: Powered by Vite, experience fast cold starts and instant HMR (Hot Module Replacement). [Vite](https://vitejs.dev/)
-- 🧩 **Automated Component Importing**: Streamline your workflow with unplugin-vue-components, automatically importing components as you use them. [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components)
-
-These features are curated to provide a seamless development experience from setup to deployment, ensuring that your Vuetify application is both powerful and maintainable.
-
-## 💡 Usage
-
-This section covers how to start the development server and build your project for production.
-
-### Starting the Development Server
-
-To start the development server with hot-reload, run the following command. The server will be accessible at [http://localhost:3000](http://localhost:3000):
+### 1. Clone the repository
 
 ```bash
-yarn dev
+git clone <repository-url>
+cd lare-viewer
 ```
 
-(Repeat for npm, pnpm, and bun with respective commands.)
-
-> Add NODE_OPTIONS='--no-warnings' to suppress the JSON import warnings that happen as part of the Vuetify import mapping. If you are on Node [v21.3.0](https://nodejs.org/en/blog/release/v21.3.0) or higher, you can change this to NODE_OPTIONS='--disable-warning=5401'. If you don't mind the warning, you can remove this from your package.json dev script.
-
-### Building for Production
-
-To build your project for production, use:
+### 2. Install dependencies
 
 ```bash
-yarn build
+npm install
 ```
 
-(Repeat for npm, pnpm, and bun with respective commands.)
+### 3. Configure environment variables
 
-Once the build process is completed, your application will be ready for deployment in a production environment.
+Create a `.env` file in the root directory and add your Mapbox access token:
 
-## 💪 Support Vuetify Development
+```env
+VITE_MAPBOX_TOKEN=your_mapbox_access_token_here
+```
 
-This project is built with [Vuetify](https://vuetifyjs.com/en/), a UI Library with a comprehensive collection of Vue components. Vuetify is an MIT licensed Open Source project that has been made possible due to the generous contributions by our [sponsors and backers](https://vuetifyjs.com/introduction/sponsors-and-backers/). If you are interested in supporting this project, please consider:
+Replace `your_mapbox_access_token_here` with your actual Mapbox access token.
 
-- [Requesting Enterprise Support](https://support.vuetifyjs.com/)
-- [Sponsoring John on Github](https://github.com/users/johnleider/sponsorship)
-- [Sponsoring Kael on Github](https://github.com/users/kaelwd/sponsorship)
-- [Supporting the team on Open Collective](https://opencollective.com/vuetify)
-- [Becoming a sponsor on Patreon](https://www.patreon.com/vuetify)
-- [Becoming a subscriber on Tidelift](https://tidelift.com/subscription/npm/vuetify)
-- [Making a one-time donation with Paypal](https://paypal.me/vuetify)
+> **Note**: If you don't have a `.env` file, create one. The application requires this environment variable to display maps.
 
-## 📑 License
-[MIT](http://opensource.org/licenses/MIT)
+### 4. Verify installation
 
-Copyright (c) 2016-present Vuetify, LLC
+After installation, your environment should be ready for development.
+
+## Running the Application
+
+### Development Mode
+
+Start the development server 
+```bash
+npm run dev
+```
+
+The development server will start and be accessible at [http://localhost:3000](http://localhost:3000) 
+
+The application will automatically reload when you make changes to the source files.
+
+### Preview Production Build
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+### Linting
+
+To lint and automatically fix code issues:
+
+```bash
+npm run lint
+```
+
+## OGC Services Architecture
+
+The application is built with OGC (Open Geospatial Consortium) services as its foundation. The architecture follows OGC standards:
+
+- **Map Layers**: All layers displayed on the map are OGC services (WMS, WMTS, WFS, etc.)
+- **Background Processes**: All background processing operations utilize OGC Web Processing Service (WPS) standards
+
+This architecture ensures interoperability with standard geospatial services and enables seamless integration with various OGC-compliant data sources and processing services.
+
+## Deployment
+
+The application is served on Netlify. You can find everything on the [live site]().
+
+## Project Structure
+
+```
+lare-viewer/
+├── src/
+│   ├── components/     # Vue components
+│   ├── lib/           # Utility libraries and helpers
+│   ├── plugins/       # Vue plugins configuration
+│   ├── router/        # Vue Router configuration
+│   ├── stores/        # Pinia stores
+│   ├── styles/        # Global styles
+│   └── views/         # Page views
+├── public/            # Static assets
+└── package.json       # Project dependencies and scripts
+```
+
+
+## License
+
+MIT
+
+Copyright (c) 2025
