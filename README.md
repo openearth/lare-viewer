@@ -1,6 +1,9 @@
 # LARE Viewer
 
-A modern web-based map viewer application built with Vue 3, Vuetify, and Mapbox GL. This application provides an interactive mapping interface for viewing geographic data and map services.
+Landscape Archetype Classification and the Landscape Resilience Explorer (**LARE**) and is inteded to be an operational framework for spatial risk analysis and Nature-based Solutions planning.
+It is a modern web-based map viewer application built with Vue 3, Vuetify, and Mapbox GL. This application provides an interactive mapping interface for viewing and interacting with geographic data and map services. 
+The Viewer is seperated from the backend that provides interaction with spatial data served as OGC data service. The interaction is setup with PyWPS processes. For more information on backend, please check https://github.com/openearth/lare. 
+
 
 ## Features
 
