@@ -26,16 +26,16 @@
 </template>
 
 <script setup>
-import { useAppStore } from '@/stores/app'
-import AreaMenu from '@/components/AreaMenu.vue'
-import HazardMenu from '@/components/HazardMenu.vue'
+  import { useAppStore } from '@/stores/app'
+  import AreaMenu from '@/components/AreaMenu.vue'
+  import HazardMenu from '@/components/HazardMenu.vue'
 
-const logoPath = '/desirmed_logo.png'
-const store = useAppStore()
+  const logoPath = '/desirmed_logo.png'
+  const store = useAppStore()
 
-const handleMenuClick = (menuName) => {
-  store.toggleMenu(menuName)
-}
+  const handleMenuClick = (menuName) => {
+    store.toggleMenu(menuName)
+  }
 </script>
 
 <style scoped>

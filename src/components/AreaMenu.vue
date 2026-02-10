@@ -12,19 +12,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useAppStore } from '@/stores/app'
+  import { computed } from 'vue'
+  import { useAppStore } from '@/stores/app'
 
-const store = useAppStore()
+  const store = useAppStore()
 
-const areaMenuIsOpen = computed({
-  get: () => store.areaMenuIsOpen,
-  set: (value) => {
-    if (!value && store.activeMenu === 'area') {
-      store.closeMenu()
-    }
-  },
-})
+  const areaMenuIsOpen = computed({
+    get: () => store.areaMenuIsOpen,
+    set: (value) => {
+      if (!value && store.activeMenu === 'area') {
+        store.closeMenu()
+      }
+    },
+  })
 </script>
 
 <style scoped>
