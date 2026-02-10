@@ -1,9 +1,8 @@
 import buildGeoserverUrl from './build-geoserver-url'
 
-const defaultUrl = import.meta.env.VITE_WMTS_URL
 
 function buildWmtsLayer ({
-  url: rawUrl = defaultUrl,
+  url: rawUrl,
   id,
   layer,
   style = '',
