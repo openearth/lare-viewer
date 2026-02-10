@@ -5,37 +5,38 @@
   >
     <v-list-item class="d-flex justify-center align-center pa-5">
       <v-img
-        :src="logoPath"
+        :src="config.logo"
         alt="DesirMED Logo"
         width="80px"
       />
     </v-list-item>
     <v-list-item
-      title="Area"
-      append-icon="mdi-checkbox-blank-outline"
-      @click="handleMenuClick('area')"
-    />
-    <v-list-item
-      title="Hazard"
-      append-icon="mdi-checkbox-blank-outline"
-      @click="handleMenuClick('hazard')"
+      v-for="menu in config.menus"
+      :key="menu.id"
+      :title="menu.title"
+      :append-icon="store.activeMenu === menu.id
+        ? 'mdi-checkbox-marked'
+        : 'mdi-checkbox-blank-outline'"
+      @click="store.toggleMenu(menu.id)"
     />
   </v-navigation-drawer>
-  <area-menu />
-  <hazard-menu />
+
+  <sub-menu
+    v-for="menu in config.menus"
+    :key="menu.id"
+    :menu-id="menu.id"
+    :drawer-title="menu.drawerTitle"
+    :component="menu.component"
+    :component-props="menu.componentProps"
+  />
 </template>
 
 <script setup>
   import { useAppStore } from '@/stores/app'
-  import AreaMenu from '@/components/AreaMenu.vue'
-  import HazardMenu from '@/components/HazardMenu.vue'
+  import SubMenu from '@/components/SubMenu.vue'
+  import config from '@/config/navigation.json'
 
-  const logoPath = '/desirmed_logo.png'
   const store = useAppStore()
-
-  const handleMenuClick = (menuName) => {
-    store.toggleMenu(menuName)
-  }
 </script>
 
 <style scoped>

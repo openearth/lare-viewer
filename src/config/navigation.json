@@ -1,0 +1,65 @@
+{
+  "logo": "/desirmed_logo.png",
+  "menus": [
+    {
+      "id": "area",
+      "title": "Area",
+      "icon": "mdi-map-marker-radius",
+      "drawerTitle": "Select a region in the map",
+      "component": "LayerList",
+      "componentProps": {
+        "layers": [
+          { "id": "area-layer-1", "name": "Administrative Regions", "active": true },
+          { "id": "area-layer-2", "name": "Coastal Zones", "active": true }
+        ]
+      }
+    },
+    {
+      "id": "hazard",
+      "title": "Hazard",
+      "icon": "mdi-alert-circle-outline",
+      "drawerTitle": "Select a hazard from the list",
+      "component": "SelectionList",
+      "componentProps": {
+        "label": "Hazard",
+        "options": [
+          { "id": "sea-level-rise", "name": "Sea Level Rise" },
+          { "id": "future-total-water-levels", "name": "Future Total Water Levels" },
+          { "id": "total-water-level-return-periods", "name": "Total Water Level Return Periods" },
+          { "id": "drivers-total-water-level", "name": "Drivers of Total Water Level" }
+        ]
+      }
+    },
+    {
+      "id": "hexagons",
+      "title": "Calculate Hexagons",
+      "icon": "mdi-hexagon-outline",
+      "drawerTitle": "Calculate Hexagons",
+      "component": "NumberInput",
+      "componentProps": {
+        "label": "Hexagon size (in m)",
+        "suffix": "m",
+        "min": 100,
+        "max": 10000,
+        "step": 100,
+        "defaultValue": 1000
+      }
+    },
+    {
+      "id": "assets",
+      "title": "Assets",
+      "icon": "mdi-city-variant-outline",
+      "drawerTitle": "Assets",
+      "component": "LayerList",
+      "componentProps": {
+        "layers": [
+          { "id": "assets-roads", "name": "Roads", "active": false },
+          { "id": "assets-schools", "name": "Schools", "active": false },
+          { "id": "assets-hospitals", "name": "Hospitals", "active": false },
+          { "id": "assets-power-grid", "name": "Power Grid", "active": false },
+          { "id": "assets-bridges", "name": "Bridges", "active": false }
+        ]
+      }
+    }
+  ]
+}
