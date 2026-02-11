@@ -9,8 +9,16 @@
       "component": "LayerList",
       "componentProps": {
         "layers": [
-          { "id": "area-layer-1", "name": "Administrative Regions", "active": true },
-          { "id": "area-layer-2", "name": "Coastal Zones", "active": true }
+          {
+            "id": "area-layer-1",
+            "name": "European Land Use Cover",
+            "active": true
+          },
+          {
+            "id": "area-layer-2",
+            "name": "NUTS 3 Regions",
+            "active": true
+          }
         ]
       }
     },
@@ -23,10 +31,22 @@
       "componentProps": {
         "label": "Hazard",
         "options": [
-          { "id": "sea-level-rise", "name": "Sea Level Rise" },
-          { "id": "future-total-water-levels", "name": "Future Total Water Levels" },
-          { "id": "total-water-level-return-periods", "name": "Total Water Level Return Periods" },
-          { "id": "drivers-total-water-level", "name": "Drivers of Total Water Level" }
+          {
+            "id": "sea-level-rise",
+            "name": "Sea Level Rise"
+          },
+          {
+            "id": "future-total-water-levels",
+            "name": "Future Total Water Levels"
+          },
+          {
+            "id": "total-water-level-return-periods",
+            "name": "Total Water Level Return Periods"
+          },
+          {
+            "id": "drivers-total-water-level",
+            "name": "Drivers of Total Water Level"
+          }
         ]
       }
     },
@@ -53,11 +73,31 @@
       "component": "LayerList",
       "componentProps": {
         "layers": [
-          { "id": "assets-roads", "name": "Roads", "active": false },
-          { "id": "assets-schools", "name": "Schools", "active": false },
-          { "id": "assets-hospitals", "name": "Hospitals", "active": false },
-          { "id": "assets-power-grid", "name": "Power Grid", "active": false },
-          { "id": "assets-bridges", "name": "Bridges", "active": false }
+          {
+            "id": "assets-roads",
+            "name": "Roads",
+            "active": false
+          },
+          {
+            "id": "assets-schools",
+            "name": "Schools",
+            "active": false
+          },
+          {
+            "id": "assets-hospitals",
+            "name": "Hospitals",
+            "active": false
+          },
+          {
+            "id": "assets-power-grid",
+            "name": "Power Grid",
+            "active": false
+          },
+          {
+            "id": "assets-bridges",
+            "name": "Bridges",
+            "active": false
+          }
         ]
       }
     }

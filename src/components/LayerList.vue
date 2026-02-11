@@ -1,8 +1,8 @@
 <template>
   <div class="layer-list">
-    <v-list-subheader class="text-primary font-weight-bold">
-      DATA LAYERS
-    </v-list-subheader>
+    <v-list-item class="data-layers-header text-decoration-underline text-subtitle-2">
+      Data Layers
+    </v-list-item>
 
     <v-list-item
       v-for="layer in layers"
@@ -14,17 +14,13 @@
           hide-details
           density="compact"
           color="primary"
-          class="mr-2"
+          class="mr-4"
         />
       </template>
 
-      <v-list-item-title>{{ layer.name }}</v-list-item-title>
-
-      <template #append>
-        <v-icon size="small" color="grey">
-          mdi-information-outline
-        </v-icon>
-      </template>
+      <v-list-item-title class="layer-name">
+        {{ layer.name }}
+      </v-list-item-title>
     </v-list-item>
   </div>
 </template>
@@ -40,3 +36,15 @@
     Object.fromEntries(props.layers.map((l) => [l.id, l.active ?? false]))
   )
 </script>
+
+<style scoped>
+.data-layers-header {
+  justify-content: center;
+  display: flex;
+  margin-top: 10px;
+}
+
+.layer-name {
+  white-space: normal;
+}
+</style>
