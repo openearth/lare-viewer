@@ -70,9 +70,11 @@
 .sub-menu-drawer {
   position: absolute;
   left: 210px !important;
+  height: fit-content !important;
   max-height: calc(100% - 50px * 2);
   margin-top: 50px;
   border-radius: 28px;
+  padding-bottom: 10px;
 }
 
 .drawer-title {
