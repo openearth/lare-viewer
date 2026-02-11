@@ -68,7 +68,7 @@
 <style scoped>
 .sub-menu-drawer {
   position: absolute;
-  left: 220px;
+  left: 210px !important;
   max-height: calc(100% - 50px * 2);
   margin-top: 50px;
   border-radius: 28px;
