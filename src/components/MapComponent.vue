@@ -1,18 +1,46 @@
 <template>
   <div class="map-wrapper">
     <mapbox-map
+      v-model:map="mapInstance"
       :access-token="accessToken"
-      :center="[4.7, 52.2]"
-      map-style="mapbox://styles/mapbox/light-v11"
-      :zoom="7"
-    />
+      :map-style="activeStyleUri"
+      :center="MAP_CENTER"
+      :zoom="MAP_ZOOM"
+      @mb-created="onMapCreated"
+    >
+      <MapLayer
+        v-for="layer in mapboxLayers"
+        :key="layer.id"
+        :layer="layer"
+        @click="onFeatureClick"
+      />
+      <MapboxNavigationControl position="bottom-right" />
+    </mapbox-map>
   </div>
 </template>
 
 <script setup>
-  import { MapboxMap } from '@studiometa/vue-mapbox-gl'
-
+  import { MapboxMap, MapboxNavigationControl } from '@studiometa/vue-mapbox-gl'
+  import { MAP_CENTER, MAP_ZOOM, MAP_BASELAYERS, MAP_BASELAYER_DEFAULT } from '@/lib/constant'
+  import { useMapStore } from '@/stores/map'
+  import { computed, ref} from 'vue'
+  const mapStore = useMapStore()
+  const mapboxLayers = computed(() => mapStore.mapboxLayers)
   const accessToken = import.meta.env.VITE_MAPBOX_TOKEN
+  const activeStyleTitle = ref(MAP_BASELAYER_DEFAULT.title)
+  const activeStyleUri = computed(() => MAP_BASELAYERS.find(style => style.title === activeStyleTitle.value).uri)
+  const mapInstance = ref(null)
+ 
+
+  function onMapCreated (map) {
+    mapInstance.value = map
+    // Initialize layers after map is created
+    mapStore.initializeMapboxLayers()
+  }
+  function onFeatureClick (features) {
+    console.log(features)
+  }
+
 </script>
 <style>
 .map-wrapper,
