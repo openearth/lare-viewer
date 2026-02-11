@@ -8,35 +8,31 @@
     @mb-mouseleave="onMouseleave"
   />
 </template>
-<script>
-  import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 
+<script setup>
+  import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
   import { unref } from 'vue'
 
-  export default {
-    components: {
-      MapboxLayer,
+  defineProps({
+    layer: {
+      type: Object,
+      default: () => ({}),
     },
-    props: {
-      layer: {
-        type: Object,
-        default: () => {},
-      },
-    },
-    mounted () {
-      const { map } = useMap()
-      this.map = map
-    },
-    methods: {
-      onLayerClicked (e) {
-        this.$emit('click', e.features[0])
-      },
-      onMouseenter () {
-        unref(this.map).getCanvas().style.cursor = 'pointer'
-      },
-      onMouseleave () {
-        unref(this.map).getCanvas().style.cursor = ''
-      },
-    },
+  })
+
+  const emit = defineEmits(['click'])
+
+  const { map } = useMap()
+
+  function onLayerClicked(e) {
+    emit('click', e.features[0])
+  }
+
+  function onMouseenter() {
+    unref(map).getCanvas().style.cursor = 'pointer'
+  }
+
+  function onMouseleave() {
+    unref(map).getCanvas().style.cursor = ''
   }
 </script>
