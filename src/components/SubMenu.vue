@@ -6,7 +6,7 @@
     width="250"
   >
     <v-list-item>
-      <v-list-item-title class="font-weight-bold">
+      <v-list-item-title class="font-weight-bold drawer-title">
         {{ drawerTitle }}
       </v-list-item-title>
       <template #append>
@@ -14,6 +14,7 @@
           icon="mdi-close"
           variant="text"
           size="small"
+          style="margin-top: 10px;"
           @click="isOpen = false"
         />
       </template>
@@ -72,5 +73,10 @@
   max-height: calc(100% - 50px * 2);
   margin-top: 50px;
   border-radius: 28px;
+}
+
+.drawer-title {
+  white-space: normal;
+  margin-top: 10px;
 }
 </style>
