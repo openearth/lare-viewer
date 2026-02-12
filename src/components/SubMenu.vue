@@ -21,9 +21,10 @@
     </v-list-item>
 
     <component
-      :is="contentComponent"
-      v-if="contentComponent"
-      v-bind="componentProps"
+      :is="comp.component"
+      v-for="(comp, index) in validComponents"
+      :key="index"
+      v-bind="comp.props"
     />
   </v-navigation-drawer>
 </template>
@@ -35,26 +36,38 @@
   const props = defineProps({
     menuId: { type: String, required: true },
     drawerTitle: { type: String, required: true },
-    component: { type: String, default: null },
-    componentProps: { type: Object, default: () => ({}) },
+    components: { type: Array, required: true },
   })
 
   const store = useAppStore()
-  const contentComponent = shallowRef(null)
+  const loadedComponents = shallowRef([])
 
   const modules = import.meta.glob('@/components/*.vue')
 
-  const loadComponent = async () => {
-    if (props.component) {
-      const path = `/src/components/${props.component}.vue`
-      if (modules[path]) {
-        const mod = await modules[path]()
-        contentComponent.value = mod.default
+  const loadComponents = async () => {
+    const loaded = []
+
+    for (const compConfig of props.components) {
+      if (compConfig.component) {
+        const path = `/src/components/${compConfig.component}.vue`
+        if (modules[path]) {
+          const mod = await modules[path]()
+          loaded.push({
+            component: mod.default,
+            props: compConfig.componentProps || {},
+          })
+        }
       }
     }
+
+    loadedComponents.value = loaded
   }
 
-  watch(() => props.component, loadComponent, { immediate: true })
+  watch(() => props.components, loadComponents, { immediate: true, deep: true })
+
+  const validComponents = computed(() => {
+    return loadedComponents.value.filter(comp => comp.component)
+  })
 
   const isOpen = computed({
     get: () => store.activeMenu === props.menuId,

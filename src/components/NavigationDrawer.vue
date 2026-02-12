@@ -26,8 +26,7 @@
     :key="menu.id"
     :menu-id="menu.id"
     :drawer-title="menu.drawerTitle"
-    :component="menu.component"
-    :component-props="menu.componentProps"
+    :components="menu.components"
   />
 </template>
 
