@@ -1,0 +1,30 @@
+[
+    {
+        "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
+        "name": "landuse",
+        "layer": "landuse:U2018_CLC2018_V2020_20u1_cog",
+        "url": "https://desirmed.openearth.eu/geoserver/landuse/wms?",
+        "format": "image/png"
+    },
+    {
+        "id": "region:nuts_2021_level_3",
+        "name": "nuts_2021",
+        "layer": "region:nuts_2021_level_3",
+        "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
+        "format": "application/vnd.mapbox-vector-tile",
+        "paint": {
+            "fill-color": "transparent",
+            "fill-opacity": 1
+        },
+        "vectorType": "fill",
+        "minZoom": 0
+    },
+    {
+        "id": "region:nuts_2021_level_3",
+        "name": "nuts_2021",
+        "layer": "region:nuts_2021_level_3",
+        "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
+        "format": "image/png",
+        "minZoom": 0
+    }
+]
