@@ -14,12 +14,14 @@
               {
                 "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
                 "name": "European Land Use Cover",
-                "active": true
+                "active": true,
+                "clickable": false
               },
               {
                 "id": "region:nuts_2021_level_3",
                 "name": "NUTS 3 Regions",
-                "active": false
+                "active": false,
+                "clickable": true
               }
             ]
           }
@@ -101,27 +103,32 @@
               {
                 "id": "assets-roads",
                 "name": "Roads",
-                "active": false
+                "active": false,
+                "clickable": false
               },
               {
                 "id": "assets-schools",
                 "name": "Schools",
-                "active": false
+                "active": false,
+                "clickable": false
               },
               {
                 "id": "assets-hospitals",
                 "name": "Hospitals",
-                "active": false
+                "active": false,
+                "clickable": false
               },
               {
                 "id": "assets-power-grid",
                 "name": "Power Grid",
-                "active": false
+                "active": false,
+                "clickable": false
               },
               {
                 "id": "assets-bridges",
                 "name": "Bridges",
-                "active": false
+                "active": false,
+                "clickable": false
               }
             ]
           }

@@ -38,6 +38,7 @@
 
   onMounted(() => {
     mapStore.initializeLayerVisibility(props.layers)
+    mapStore.initializeLayerClickable(props.layers)
   })
 </script>
 
