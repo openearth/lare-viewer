@@ -12,14 +12,14 @@
           "componentProps": {
             "layers": [
               {
-                "id": "area-layer-1",
+                "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
                 "name": "European Land Use Cover",
                 "active": true
               },
               {
-                "id": "area-layer-2",
+                "id": "region:nuts_2021_level_3",
                 "name": "NUTS 3 Regions",
-                "active": true
+                "active": false
               }
             ]
           }

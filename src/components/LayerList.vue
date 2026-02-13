@@ -10,11 +10,12 @@
     >
       <template #prepend>
         <v-switch
-          v-model="layerStates[layer.id]"
+          :model-value="mapStore.layerVisibility[layer.id] ?? false"
           hide-details
           density="compact"
           color="primary"
           class="mr-4"
+          @update:model-value="mapStore.setLayerVisibility(layer.id, $event)"
         />
       </template>
 
@@ -26,15 +27,18 @@
 </template>
 
 <script setup>
-  import { reactive } from 'vue'
+  import { onMounted } from 'vue'
+  import { useMapStore } from '@/stores/map'
 
   const props = defineProps({
     layers: { type: Array, required: true },
   })
 
-  const layerStates = reactive(
-    Object.fromEntries(props.layers.map((l) => [l.id, l.active ?? false]))
-  )
+  const mapStore = useMapStore()
+
+  onMounted(() => {
+    mapStore.initializeLayerVisibility(props.layers)
+  })
 </script>
 
 <style scoped>

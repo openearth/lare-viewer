@@ -9,7 +9,7 @@
       @mb-created="onMapCreated"
     >
       <MapLayer
-        v-for="layer in mapboxLayers"
+        v-for="layer in visibleMapboxLayers"
         :key="layer.id"
         :layer="layer"
         @click="onFeatureClick"
@@ -25,7 +25,7 @@
   import { useMapStore } from '@/stores/map'
   import { computed, ref} from 'vue'
   const mapStore = useMapStore()
-  const mapboxLayers = computed(() => mapStore.mapboxLayers)
+  const visibleMapboxLayers = computed(() => mapStore.visibleMapboxLayers)
   const accessToken = import.meta.env.VITE_MAPBOX_TOKEN
   const activeStyleTitle = ref(MAP_BASELAYER_DEFAULT.title)
   const activeStyleUri = computed(() => MAP_BASELAYERS.find(style => style.title === activeStyleTitle.value).uri)
