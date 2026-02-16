@@ -85,6 +85,24 @@
       "drawerTitle": "Calculate UOM",
       "components": [
         {
+          "component": "NumberInput",
+          "componentProps": {
+            "label": "Hexagon size (in m)",
+            "suffix": "m",
+            "min": 100,
+            "max": 10000,
+            "step": 100,
+            "defaultValue": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "title": "Assets",
+      "icon": "mdi-city-variant-outline",
+      "components": [
+        {
           "component": "LayerList",
           "componentProps": {
             "layers": [
