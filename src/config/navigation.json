@@ -4,6 +4,7 @@
     {
       "id": "baseMaps",
       "title": "Base Maps",
+      "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
       "components": [
         {
@@ -91,6 +92,7 @@
     {
       "id": "assets",
       "title": "Assets",
+      "drawerTitle": "Select an asset type",
       "icon": "mdi-city-variant-outline",
       "components": [
         {
