@@ -9,8 +9,8 @@
       @mb-created="onMapCreated"
     >
       <MapLayer
-        v-for="layer in mapboxLayers"
-        :key="layer.id"
+        v-for="layer in mapStore.visibleMapboxLayers"
+        :key="`${layer.id}-${layer.type}`"
         :layer="layer"
         @click="onFeatureClick"
       />
@@ -23,20 +23,18 @@
   import { MapboxMap, MapboxNavigationControl } from '@studiometa/vue-mapbox-gl'
   import { MAP_CENTER, MAP_ZOOM, MAP_BASELAYERS, MAP_BASELAYER_DEFAULT } from '@/lib/constant'
   import { useMapStore } from '@/stores/map'
-  import { computed, ref} from 'vue'
+  import { computed, ref } from 'vue'
   const mapStore = useMapStore()
-  const mapboxLayers = computed(() => mapStore.mapboxLayers)
   const accessToken = import.meta.env.VITE_MAPBOX_TOKEN
   const activeStyleTitle = ref(MAP_BASELAYER_DEFAULT.title)
   const activeStyleUri = computed(() => MAP_BASELAYERS.find(style => style.title === activeStyleTitle.value).uri)
   const mapInstance = ref(null)
- 
 
   function onMapCreated (map) {
     mapInstance.value = map
-    // Initialize layers after map is created
     mapStore.initializeMapboxLayers()
   }
+
   function onFeatureClick (features) {
     console.log(features)
   }

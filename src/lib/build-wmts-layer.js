@@ -33,7 +33,7 @@ function buildWmtsLayer ({
 
   return format === 'application/vnd.mapbox-vector-tile'
     ? {
-      'id': layer.split(':')[1],
+      'id': id, // Use original config ID to match visibility/clickable state
       layer,
       'type': vectorType,
       'source': {

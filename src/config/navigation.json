@@ -1,0 +1,145 @@
+{
+  "logo": "/desirmed_logo.png",
+  "menus": [
+    {
+      "id": "baseMaps",
+      "title": "Base Maps",
+      "icon": "mdi-map-marker-radius",
+      "components": [
+        {
+          "component": "LayerList",
+          "componentProps": {
+            "layers": [
+              {
+                "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
+                "name": "European Land Use Cover",
+                "active": true,
+                "clickable": false
+              },
+              {
+                "id": "region:nuts_2021_level_3",
+                "name": "NUTS 3 Regions",
+                "active": true,
+                "clickable": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "regionSelection",
+      "title": "Region Selection",
+      "icon": "mdi-hexagon-outline",
+      "drawerTitle": "Select a region in the map",
+      "components": [
+        {
+          "component": "NumberInput",
+          "componentProps": {
+            "label": "Hexagon size (in m)",
+            "suffix": "m",
+            "min": 100,
+            "max": 10000,
+            "step": 100,
+            "defaultValue": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "hazard",
+      "title": "Hazard selection",
+      "icon": "mdi-alert-circle-outline",
+      "drawerTitle": "Select a hazard from the list",
+      "components": [
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "Hazard",
+            "options": [
+              {
+                "id": "sea-level-rise",
+                "name": "Sea Level Rise"
+              },
+              {
+                "id": "future-total-water-levels",
+                "name": "Future Total Water Levels"
+              },
+              {
+                "id": "total-water-level-return-periods",
+                "name": "Total Water Level Return Periods"
+              },
+              {
+                "id": "drivers-total-water-level",
+                "name": "Drivers of Total Water Level"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "uom",
+      "title": "Calculate UOM",
+      "icon": "mdi-city-variant-outline",
+      "drawerTitle": "Calculate UOM",
+      "components": [
+        {
+          "component": "NumberInput",
+          "componentProps": {
+            "label": "Hexagon size (in m)",
+            "suffix": "m",
+            "min": 100,
+            "max": 10000,
+            "step": 100,
+            "defaultValue": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "title": "Assets",
+      "icon": "mdi-city-variant-outline",
+      "components": [
+        {
+          "component": "LayerList",
+          "componentProps": {
+            "layers": [
+              {
+                "id": "assets-roads",
+                "name": "Roads",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "assets-schools",
+                "name": "Schools",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "assets-hospitals",
+                "name": "Hospitals",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "assets-power-grid",
+                "name": "Power Grid",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "assets-bridges",
+                "name": "Bridges",
+                "active": false,
+                "clickable": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

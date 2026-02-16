@@ -11,9 +11,10 @@
 
 <script setup>
   import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-  import { unref } from 'vue'
+  import { computed, unref } from 'vue'
+  import { useMapStore } from '@/stores/map'
 
-  defineProps({
+  const props = defineProps({
     layer: {
       type: Object,
       default: () => ({}),
@@ -23,13 +24,20 @@
   const emit = defineEmits(['click'])
 
   const { map } = useMap()
+  const mapStore = useMapStore()
+
+  const isClickable = computed(() => mapStore.isLayerClickable(props.layer.id))
 
   function onLayerClicked(e) {
-    emit('click', e.features[0])
+    if (isClickable.value) {
+      emit('click', e.features[0])
+    }
   }
 
   function onMouseenter() {
-    unref(map).getCanvas().style.cursor = 'pointer'
+    if (isClickable.value) {
+      unref(map).getCanvas().style.cursor = 'pointer'
+    }
   }
 
   function onMouseleave() {

@@ -12,10 +12,19 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
+    AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
+    copy: typeof import('./src/components/HazardMenu.vue')['default']
+    HazardMenu: typeof import('./src/components/HazardMenu.vue')['default']
+    HazardSelect: typeof import('./src/components/HazardSelect.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
     MapLayer: typeof import('./src/components/MapLayer.vue')['default']
+    NavigationDrawer: typeof import('./src/components/NavigationDrawer.vue')['default']
+    NumberInput: typeof import('./src/components/NumberInput.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SelectionList: typeof import('./src/components/SelectionList.vue')['default']
+    SubMenu: typeof import('./src/components/SubMenu.vue')['default']
   }
 }
