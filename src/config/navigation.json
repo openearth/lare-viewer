@@ -31,47 +31,38 @@
       "id": "regionSelection",
       "title": "Region Selection",
       "icon": "mdi-hexagon-outline",
-      "drawerTitle": "Select a region in the map",
-      "components": [
-        {
-          "component": "NumberInput",
-          "componentProps": {
-            "label": "Hexagon size (in m)",
-            "suffix": "m",
-            "min": 100,
-            "max": 10000,
-            "step": 100,
-            "defaultValue": 1000
-          }
-        }
-      ]
+      "drawerTitle": "Select a region in the map"
     },
     {
       "id": "hazard",
-      "title": "Hazard selection",
+      "title": "Hazard mitigation selection",
       "icon": "mdi-alert-circle-outline",
-      "drawerTitle": "Select a hazard from the list",
+      "drawerTitle": "Select a hazard mitigation from the list",
       "components": [
         {
           "component": "SelectionList",
           "componentProps": {
-            "label": "Hazard",
+            "label": "Hazard mitigation maps",
             "options": [
               {
-                "id": "sea-level-rise",
-                "name": "Sea Level Rise"
+                "id": "flood",
+                "name": "Flood mitigation"
               },
               {
-                "id": "future-total-water-levels",
-                "name": "Future Total Water Levels"
+                "id": "fire",
+                "name": "Fire mitigation"
               },
               {
-                "id": "total-water-level-return-periods",
-                "name": "Total Water Level Return Periods"
+                "id": "erosion",
+                "name": "Erosion mitigation"
               },
               {
-                "id": "drivers-total-water-level",
-                "name": "Drivers of Total Water Level"
+                "id": "heat",
+                "name": "Heatwave mitigation"
+              },
+              {
+                "id": "drought",
+                "name": "Drought mitigation"
               }
             ]
           }
