@@ -25,8 +25,8 @@
     :key="menu.id"
     :menu-id="menu.id"
     :drawer-title="menu.drawerTitle"
-    :components="menu.components || []"
-    :completion-event="menu.completionEvent || null"
+    :components="menu.components"
+    :completion-event="menu.completionEvent"
     :wps="menu.wps || null"
   />
 </template>

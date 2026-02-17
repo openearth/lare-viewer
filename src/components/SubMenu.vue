@@ -92,7 +92,7 @@
     if (props.wps) {
       try {
         const baseUrl = import.meta.env.VITE_WPS_BASE_URL
-        const inputs = payload.value != null
+        const inputs = payload?.value != null
           ? [{ id: props.menuId, type: 'LiteralData', value: payload.value }]
           : []
 
