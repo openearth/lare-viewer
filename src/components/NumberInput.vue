@@ -12,6 +12,16 @@
       color="primary"
       hide-details
     />
+    <v-btn
+      class="mt-2"
+      color="primary"
+      variant="tonal"
+      block
+      size="small"
+      @click="confirm"
+    >
+      Confirm
+    </v-btn>
   </div>
 </template>
 
@@ -27,5 +37,10 @@
     defaultValue: { type: Number, default: 0 },
   })
 
+  const emit = defineEmits(['step-complete'])
   const value = ref(props.defaultValue)
+
+  function confirm () {
+    emit('step-complete', { value: value.value })
+  }
 </script>

@@ -25,6 +25,7 @@
       v-for="(comp, index) in validComponents"
       :key="index"
       v-bind="comp.props"
+      @step-complete="onStepComplete"
     />
   </v-navigation-drawer>
 </template>
@@ -32,11 +33,14 @@
 <script setup>
   import { computed, shallowRef, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
+  import sendWpsRequest from '@/lib/wps'
 
   const props = defineProps({
     menuId: { type: String, required: true },
     drawerTitle: { type: String, required: true },
-    components: { type: Array, required: true },
+    components: { type: Array, default: () => [] },
+    completionEvent: { type: String, default: null },
+    wps: { type: Object, default: null },
   })
 
   const store = useAppStore()
@@ -77,6 +81,40 @@
       }
     },
   })
+
+  watch(isOpen, (open) => {
+    if (open && props.completionEvent === 'auto' && !store.isStepCompleted(props.menuId)) {
+      completeCurrentStep()
+    }
+  })
+
+  async function completeCurrentStep (payload = {}) {
+    if (props.wps) {
+      try {
+        const baseUrl = import.meta.env.VITE_WPS_BASE_URL
+        const inputs = payload?.value != null
+          ? [{ id: props.menuId, type: 'LiteralData', value: payload.value }]
+          : []
+
+        await sendWpsRequest({
+          baseUrl,
+          identifier: props.wps.identifier,
+          inputs,
+        })
+      } catch (error) {
+        console.error(`WPS request failed for step "${ props.menuId }":`, error)
+      }
+    }
+
+    store.completeStep(props.menuId)
+  }
+
+  function onStepComplete (payload) {
+    if (store.isStepCompleted(props.menuId)) {
+      store.resetStepsFrom(props.menuId)
+    }
+    completeCurrentStep(payload)
+  }
 </script>
 
 <style scoped>

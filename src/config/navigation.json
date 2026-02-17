@@ -6,6 +6,7 @@
       "title": "Base Maps",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
+      "completionEvent": "auto",
       "components": [
         {
           "component": "LayerList",
@@ -32,13 +33,26 @@
       "id": "regionSelection",
       "title": "Region Selection",
       "icon": "mdi-hexagon-outline",
-      "drawerTitle": "Select a region in the map"
+      "drawerTitle": "Select a region in the map",
+      "requiredSteps": [
+        "baseMaps"
+      ],
+      "completionEvent": "auto",
+      "wps": {
+        "identifier": "test"
+      }
     },
     {
       "id": "hazard",
       "title": "Hazard mitigation selection",
       "icon": "mdi-alert-circle-outline",
       "drawerTitle": "Select a hazard mitigation from the list",
+      "requiredSteps": [
+        "regionSelection"
+      ],
+      "wps": {
+        "identifier": "hazard"
+      },
       "components": [
         {
           "component": "SelectionList",
@@ -75,6 +89,9 @@
       "title": "Calculate UOM",
       "icon": "mdi-city-variant-outline",
       "drawerTitle": "Calculate UOM",
+      "requiredSteps": [
+        "hazard"
+      ],
       "components": [
         {
           "component": "NumberInput",
@@ -94,6 +111,10 @@
       "title": "Assets",
       "drawerTitle": "Select an asset type",
       "icon": "mdi-city-variant-outline",
+      "requiredSteps": [
+        "uom"
+      ],
+      "completionEvent": "auto",
       "components": [
         {
           "component": "LayerList",
