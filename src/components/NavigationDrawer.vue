@@ -14,10 +14,9 @@
       v-for="menu in config.menus"
       :key="menu.id"
       :title="menu.title"
-      :append-icon="store.activeMenu === menu.id
-        ? 'mdi-checkbox-marked'
-        : 'mdi-checkbox-blank-outline'"
-      @click="store.toggleMenu(menu.id)"
+      :disabled="!store.isStepAvailable(menu)"
+      :class="{ 'step-locked': !store.isStepAvailable(menu) }"
+      @click="handleMenuClick(menu)"
     />
   </v-navigation-drawer>
 
@@ -26,7 +25,9 @@
     :key="menu.id"
     :menu-id="menu.id"
     :drawer-title="menu.drawerTitle"
-    :components="menu.components"
+    :components="menu.components || []"
+    :completion-event="menu.completionEvent || null"
+    :wps="menu.wps || null"
   />
 </template>
 
@@ -36,6 +37,11 @@
   import config from '@/config/navigation.json'
 
   const store = useAppStore()
+
+  function handleMenuClick (menu) {
+    if (!store.isStepAvailable(menu)) return
+    store.toggleMenu(menu.id)
+  }
 </script>
 
 <style scoped>
@@ -44,5 +50,10 @@
   margin-top: 50px;
   margin-left: 10px;
   border-radius: 28px;
+}
+
+.step-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>
