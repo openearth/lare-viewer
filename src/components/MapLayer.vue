@@ -30,13 +30,13 @@
 
   function onLayerClicked(e) {
     if (isClickable.value) {
-    emit('click', e.features[0])
+      emit('click', e.features[0])
     }
   }
 
   function onMouseenter() {
     if (isClickable.value) {
-    unref(map).getCanvas().style.cursor = 'pointer'
+      unref(map).getCanvas().style.cursor = 'pointer'
     }
   }
 
