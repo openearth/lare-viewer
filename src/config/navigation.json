@@ -22,7 +22,8 @@
                 "id": "region:nuts_2021_level_3",
                 "name": "NUTS 3 Regions",
                 "active": true,
-                "clickable": true
+                "clickable": true,
+                "propertiesBox": "region"
               }
             ]
           }

@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ActiveFeatureProperties: typeof import('./src/components/ActiveFeatureProperties.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
     copy: typeof import('./src/components/HazardMenu.vue')['default']
