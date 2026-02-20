@@ -9,6 +9,7 @@ export const useMapStore = defineStore('map', {
     mapboxLayers: [],
     layerVisibility: {},
     layerClickable: {},
+    activeRegion: null,
   }),
   
   getters: {
@@ -93,6 +94,18 @@ export const useMapStore = defineStore('map', {
     
     setLayerVisibility (layerId, isVisible) {
       this.layerVisibility[layerId] = isVisible
+    },
+    
+    setActiveRegion (layerId, feature) {
+      this.activeRegion = {
+        layerId: layerId,
+        properties: feature.properties || {},
+        feature: feature,
+      }
+    },
+    
+    clearActiveRegion () {
+      this.activeRegion = null
     },
   },
 })
