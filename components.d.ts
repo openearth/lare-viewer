@@ -18,6 +18,7 @@ declare module 'vue' {
     HazardMenu: typeof import('./src/components/HazardMenu.vue')['default']
     HazardSelect: typeof import('./src/components/HazardSelect.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
     LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
     MapLayer: typeof import('./src/components/MapLayer.vue')['default']
