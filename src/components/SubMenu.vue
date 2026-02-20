@@ -33,7 +33,11 @@
 <script setup>
   import { computed, shallowRef, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
+  import { useMapStore } from '@/stores/map'
   import sendWpsRequest from '@/lib/wps'
+  import { describeProcess } from '@/lib/wps/describe'
+  import { resolveAllInputs } from '@/lib/wps/resolve-input'
+  import { handleOutputActions } from '@/lib/wps/handle-output'
 
   const props = defineProps({
     menuId: { type: String, required: true },
@@ -44,6 +48,7 @@
   })
 
   const store = useAppStore()
+  const mapStore = useMapStore()
   const loadedComponents = shallowRef([])
 
   const modules = import.meta.glob('@/components/*.vue')
@@ -92,15 +97,30 @@
     if (props.wps) {
       try {
         const baseUrl = import.meta.env.VITE_WPS_BASE_URL
-        const inputs = payload?.value != null
-          ? [{ id: props.menuId, type: 'LiteralData', value: payload.value }]
-          : []
+        const { identifier, inputs: inputSourceMap, outputActions, storeResultAs } = props.wps
 
-        await sendWpsRequest({
+        const stores = { app: store, map: mapStore }
+        const context = { payload, stores }
+
+        let inputs = []
+        if (inputSourceMap) {
+          const processDesc = await describeProcess(baseUrl, identifier)
+          inputs = resolveAllInputs(inputSourceMap, processDesc.inputs, context)
+        }
+
+        const result = await sendWpsRequest({
           baseUrl,
-          identifier: props.wps.identifier,
+          identifier,
           inputs,
         })
+
+        if (storeResultAs) {
+          store.setWpsResult(storeResultAs, result)
+        }
+
+        if (outputActions) {
+          handleOutputActions(outputActions, result, stores)
+        }
       } catch (error) {
         console.error(`WPS request failed for step "${ props.menuId }":`, error)
       }

@@ -2,8 +2,8 @@
   "logo": "/desirmed_logo.png",
   "menus": [
     {
-      "id": "baseMaps",
-      "title": "Base Maps",
+      "id": "regionSelection",
+      "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
       "completionEvent": "auto",
@@ -28,19 +28,13 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "id": "regionSelection",
-      "title": "Region Selection",
-      "icon": "mdi-hexagon-outline",
-      "drawerTitle": "Select a region in the map",
-      "requiredSteps": [
-        "baseMaps"
       ],
-      "completionEvent": "auto",
       "wps": {
-        "identifier": "test"
+        "identifier": "region_selection",
+        "inputs": {
+          "nutsid": "store:map.activeRegion.properties.NUTS_ID"
+        },
+        "storeResultAs": "regionSelection"
       }
     },
     {
@@ -52,7 +46,12 @@
         "regionSelection"
       ],
       "wps": {
-        "identifier": "hazard"
+        "identifier": "hazard",
+        "inputs": {
+          "hazard_type": "payload:value",
+          "nutsid": "store:map.activeRegion.properties.NUTS_ID"
+        },
+        "storeResultAs": "hazard"
       },
       "components": [
         {
