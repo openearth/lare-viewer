@@ -14,7 +14,7 @@
         :layer="layer"
         @click="onFeatureClick"
       />
-      <MapboxNavigationControl position="top-right" />
+      <MapboxNavigationControl position="bottom-right" />
     </mapbox-map>
   </div>
 </template>

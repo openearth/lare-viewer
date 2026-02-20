@@ -1,50 +1,52 @@
 <template>
-  <v-card
+  <div
     v-if="hasVisibleLayers"
-    class="layer-legend"
-    elevation="4"
-    rounded="xl"
-    max-width="300"
+    class="layer-legend-container"
   >
-    <v-card-title
-      class="d-flex justify-space-between align-center legend-title"
-      @click="toggleLegend"
+    <v-badge
+      :content="visibleLayers.length"
+      :model-value="true"
+      color="primary"
+      overlap
     >
-      <span class="text-subtitle-2">
-        {{ legendTitle }}
-      </span>
-      <v-icon
-        class="legend-chevron"
-        :class="{ 'legend-chevron--active': showLegend }"
-      >
-        mdi-chevron-down
-      </v-icon>
-    </v-card-title>
+      <v-btn
+        class="legend-button"
+        icon="mdi-map-legend"
+        size="large"
+        elevation="4"
+        @click="toggleLegend"
+      />
+    </v-badge>
 
     <v-expand-transition>
-      <v-card-text
+      <v-card
         v-show="showLegend"
-        class="legend-content"
+        class="legend-panel"
+        elevation="4"
+        rounded="xl"
+        max-width="300"
       >
-        <div
-          v-for="layer in visibleLayers"
-          :key="layer.id"
-          class="legend-item mb-3"
-        >
-          <div class="text-body-2 mb-1 font-weight-medium">
-            {{ getLayerName(layer.id) }}
-          </div>
-          <img
-            v-if="!failedImageIds.has(layer.id)"
-            class="legend-image"
-            :src="legendUrl(layer)"
-            alt=""
-            @error="onImageError(layer.id)"
+        <v-card-text class="legend-content">
+          <div
+            v-for="layer in visibleLayers"
+            :key="layer.id"
+            class="legend-item mb-3"
           >
-        </div>
-      </v-card-text>
+            <div class="text-body-2 mb-1 font-weight-medium">
+              {{ getLayerName(layer.id) }}
+            </div>
+            <img
+              v-if="!failedImageIds.has(layer.id)"
+              class="legend-image"
+              :src="legendUrl(layer)"
+              alt=""
+              @error="onImageError(layer.id)"
+            >
+          </div>
+        </v-card-text>
+      </v-card>
     </v-expand-transition>
-  </v-card>
+  </div>
 </template>
 
 <script setup>
@@ -77,11 +79,6 @@
 
   const hasVisibleLayers = computed(() => visibleLayers.value.length > 0)
 
-  const legendTitle = computed(() => {
-    const count = visibleLayers.value.length
-    return count === 1 ? 'Legend' : 'Legends'
-  })
-
   function getLayerName (layerId) {
     const navName = getLayerNameFromNavigation(layerId)
     if (navName) {
@@ -106,30 +103,35 @@
 </script>
 
 <style scoped>
-.layer-legend {
+.layer-legend-container {
   position: absolute;
   bottom: 24px;
   right: 58px;
   z-index: 2;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.legend-button {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.legend-panel {
+  position: relative;
+  max-height: calc(100vh - 200px);
+  flex-shrink: 0;
 }
 
 .legend-title {
-  cursor: pointer;
   padding: 12px 16px;
   user-select: none;
 }
 
-.legend-chevron {
-  transform: rotate(-180deg);
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1);
-}
-
-.legend-chevron--active {
-  transform: rotate(0deg);
-}
-
 .legend-content {
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 280px);
   overflow-y: auto;
   padding: 8px 16px 16px 16px;
 }
