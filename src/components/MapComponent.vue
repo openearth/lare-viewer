@@ -35,8 +35,10 @@
     mapStore.initializeMapboxLayers()
   }
 
-  function onFeatureClick (features) {
-    console.log(features)
+  function onFeatureClick (feature) {
+    if (feature?.layer?.id) {
+      mapStore.setActiveRegion(feature.layer.id, feature)
+    }
   }
 
 </script>
