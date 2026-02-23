@@ -50,14 +50,23 @@
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
   import { useMapStore } from '@/stores/map'
   import buildLegendUrl from '@/lib/build-legend-url'
   import navigationConfig from '@/config/navigation.json'
 
   const mapStore = useMapStore()
-  const showLegend = ref(false)
   const failedImageIds = ref(new Set())
+  const showLegend = ref(true)
+  
+  const visibleLayers = computed(() => mapStore.visibleLayersWithConfig)
+  const hasVisibleLayers = computed(() => visibleLayers.value.length > 0)
+  
+  watch(hasVisibleLayers, (newValue) => {
+    if (newValue) {
+      showLegend.value = true
+    }
+  })
 
   function getLayerNameFromNavigation (layerId) {
     for (const menu of navigationConfig.menus) {
@@ -74,10 +83,6 @@
     }
     return null
   }
-
-  const visibleLayers = computed(() => mapStore.visibleLayersWithConfig)
-
-  const hasVisibleLayers = computed(() => visibleLayers.value.length > 0)
 
   function getLayerName (layerId) {
     const navName = getLayerNameFromNavigation(layerId)
