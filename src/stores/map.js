@@ -32,6 +32,38 @@ export const useMapStore = defineStore('map', {
     isLayerClickable: (state) => (layerId) => {
       return state.layerClickable[layerId] ?? false
     },
+    
+    visibleLayersWithConfig: (state) => {
+      const visible = []
+      const seenIds = new Set()
+      
+      for (const layerId in state.layerVisibility) {
+        if (state.layerVisibility[layerId] === true) {
+          // Skip raster layers with _raster suffix (only show base layer legends)
+          if (layerId.endsWith('_raster')) {
+            continue
+          }
+          
+          // Avoid duplicates
+          if (seenIds.has(layerId)) {
+            continue
+          }
+          seenIds.add(layerId)
+          
+          const layerConfig = state.layersConfig.find(config => config.id === layerId)
+          if (layerConfig && layerConfig.url && layerConfig.layer) {
+            visible.push({
+              id: layerId,
+              url: layerConfig.url,
+              layer: layerConfig.layer,
+              name: layerConfig.name,
+            })
+          }
+        }
+      }
+      
+      return visible
+    },
   },
   
   actions: {
