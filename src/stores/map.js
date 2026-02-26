@@ -1,4 +1,3 @@
-// stores/map.js
 import { defineStore } from 'pinia'
 import layersConfig from '@/data/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
@@ -106,6 +105,25 @@ export const useMapStore = defineStore('map', {
     
     clearActiveRegion () {
       this.activeRegion = null
+    },
+
+    addDynamicLayer (layerConfig) {
+      const existing = this.mapboxLayers.find(l => l.id === layerConfig.id)
+      if (existing) return
+
+      const built = buildMapboxLayer({
+        ...layerConfig,
+        format: 'image/png',
+      })
+      if (built) {
+        this.mapboxLayers.push(built)
+        this.layerVisibility[layerConfig.id] = true
+      }
+    },
+
+    removeDynamicLayer (layerId) {
+      this.mapboxLayers = this.mapboxLayers.filter(l => l.id !== layerId)
+      delete this.layerVisibility[layerId]
     },
   },
 })

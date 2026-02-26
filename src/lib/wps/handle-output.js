@@ -29,11 +29,25 @@ export function handleOutputActions (actions, response, stores) {
         }
         break
 
-      case 'addLayer':
-        if (value && stores.map?.addDynamicLayer) {
-          stores.map.addDynamicLayer(value, action.layerConfig || {})
+      case 'addLayer': {
+        if (!value || !stores.map?.addDynamicLayer) break
+        const folders = Array.isArray(value) ? value : [value]
+        for (const folder of folders) {
+          const entries = folder?.contents ?? [folder]
+          for (const entry of entries) {
+            if (entry?.layer && entry?.url) {
+              stores.map.addDynamicLayer({
+                id: entry.layer,
+                name: entry.name || entry.layer,
+                layer: entry.layer,
+                url: entry.url,
+                ...(action.layerConfig || {}),
+              })
+            }
+          }
         }
         break
+      }
 
       default:
         console.warn(`[handleOutputActions] Unknown action: "${ action.action }"`)

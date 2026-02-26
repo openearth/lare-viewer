@@ -35,8 +35,7 @@
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import sendWpsRequest from '@/lib/wps'
-  import { describeProcess } from '@/lib/wps/describe'
-  import { resolveAllInputs } from '@/lib/wps/resolve-input'
+  import { resolveInputs } from '@/lib/wps/resolve-input'
   import { handleOutputActions } from '@/lib/wps/handle-output'
 
   const props = defineProps({
@@ -87,53 +86,96 @@
     },
   })
 
+  // --- Step completion (independent of WPS) ---
+
   watch(isOpen, (open) => {
     if (open && props.completionEvent === 'auto' && !store.isStepCompleted(props.menuId)) {
-      completeCurrentStep()
+      completeStep()
     }
   })
 
-  async function completeCurrentStep (payload = {}) {
-    if (props.wps) {
-      try {
-        const baseUrl = import.meta.env.VITE_WPS_BASE_URL
-        const { identifier, inputs: inputSourceMap, outputActions, storeResultAs } = props.wps
-
-        const stores = { app: store, map: mapStore }
-        const context = { payload, stores }
-
-        let inputs = []
-        if (inputSourceMap) {
-          const processDesc = await describeProcess(baseUrl, identifier)
-          inputs = resolveAllInputs(inputSourceMap, processDesc.inputs, context)
-        }
-
-        const result = await sendWpsRequest({
-          baseUrl,
-          identifier,
-          inputs,
-        })
-
-        if (storeResultAs) {
-          store.setWpsResult(storeResultAs, result)
-        }
-
-        if (outputActions) {
-          handleOutputActions(outputActions, result, stores)
-        }
-      } catch (error) {
-        console.error(`WPS request failed for step "${ props.menuId }":`, error)
-      }
-    }
-
-    store.completeStep(props.menuId)
-  }
-
-  function onStepComplete (payload) {
+  function completeStep () {
     if (store.isStepCompleted(props.menuId)) {
       store.resetStepsFrom(props.menuId)
     }
-    completeCurrentStep(payload)
+    store.completeStep(props.menuId)
+  }
+
+  // --- WPS execution (driven by wps.trigger) ---
+
+  const wpsTrigger = props.wps?.trigger
+
+  if (wpsTrigger === 'mapClick') {
+    watch(() => mapStore.activeRegion, (region) => {
+      if (region && isOpen.value) {
+        executeWps()
+      }
+    })
+  }
+
+  async function executeWps (payload = {}) {
+    if (!props.wps) return
+
+    try {
+      const baseUrl = import.meta.env.VITE_WPS_BASE_URL
+      const { identifier, outputActions, storeResultAs } = props.wps
+
+      const stores = { app: store, map: mapStore }
+      const context = { payload, stores }
+
+      const inputs = resolveInputs(props.wps.inputs, context)
+      console.log("inputs", inputs)
+      console.log("baseUrl", baseUrl)
+      console.log("identifier", identifier)
+      const result = await sendWpsRequest({
+        baseUrl,
+        identifier,
+        inputs,
+      })
+
+      if (storeResultAs) {
+        store.setWpsResult(storeResultAs, result)
+      }
+
+      if (outputActions) {
+        handleOutputActions(outputActions, result, stores)
+      }
+
+      addWpsLayers(result)
+    } catch (error) {
+      console.error(`WPS request failed for step "${ props.menuId }":`, error)
+    }
+
+    completeStep()
+  }
+
+  function addWpsLayers (result) {
+    if (!result) return
+
+    const layerData = result.layers ?? result
+    const folders = Array.isArray(layerData) ? layerData : []
+
+    for (const folder of folders) {
+      if (!folder?.contents) continue
+      for (const entry of folder.contents) {
+        if (entry.layer && entry.url) {
+          mapStore.addDynamicLayer({
+            id: entry.layer,
+            name: entry.name || entry.layer,
+            layer: entry.layer,
+            url: entry.url,
+          })
+        }
+      }
+    }
+  }
+
+  function onStepComplete (payload) {
+    if (wpsTrigger === 'stepComplete') {
+      executeWps(payload)
+    } else {
+      completeStep()
+    }
   }
 </script>
 
