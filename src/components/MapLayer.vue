@@ -11,7 +11,7 @@
 
 <script setup>
   import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-  import { computed, ref, unref, onMounted, onUnmounted } from 'vue'
+  import { computed, ref, unref, onMounted, onUnmounted, nextTick } from 'vue'
   import { useMapStore } from '@/stores/map'
 
   const props = defineProps({
@@ -26,6 +26,12 @@
   const { map } = useMap()
   const mapStore = useMapStore()
 
+  // Highlight & hover logic below is intended for vector WMTS tile sources
+  // built via `build-wmts-layer`, where features support Mapbox feature-state.
+  // It deliberately uses the feature's actual `source` / `sourceLayer` from
+  // Mapbox click events instead of using the layer id of the config, so it remains
+  // correct even if source IDs or layer is not passed correctly.
+
   const isClickable = computed(() => mapStore.isLayerClickable(props.layer.id))
   const layerId = computed(() => props.layer?.id)
   const sourceLayer = computed(() => props.layer?.['source-layer'])
@@ -34,11 +40,23 @@
   const selectedSource = ref(null)
   const selectedSourceLayer = ref(null)
 
+  const hoveredId = ref(null)
+  const hoveredSource = ref(null)
+  const hoveredSourceLayer = ref(null)
+
   function setHighlight(mapInstance, source, sourceLayerName, id, selected) {
     if (!mapInstance || source == null || sourceLayerName == null || id == null) return
     mapInstance.setFeatureState(
       { source, sourceLayer: sourceLayerName, id },
       { selected }
+    )
+  }
+
+  function setHover(mapInstance, source, sourceLayerName, id, hover) {
+    if (!mapInstance || source == null || sourceLayerName == null || id == null) return
+    mapInstance.setFeatureState(
+      { source, sourceLayer: sourceLayerName, id },
+      { hover }
     )
   }
 
@@ -102,14 +120,46 @@
   }
 
   onMounted(() => {
+    const mapInstance = unref(map)
+    if (!mapInstance) return
     if (isClickable.value) {
-      unref(map)?.on('click', onMapClick)
+      mapInstance.on('click', onMapClick)
+      nextTick(() => {
+        if (layerId.value && mapInstance.getLayer(layerId.value)) {
+          mapInstance.on('mousemove', layerId.value, onMousemove)
+        }
+      })
     }
   })
 
   onUnmounted(() => {
-    unref(map)?.off('click', onMapClick)
+    const mapInstance = unref(map)
+    if (mapInstance) {
+      mapInstance.off('click', onMapClick)
+      if (layerId.value) mapInstance.off('mousemove', layerId.value, onMousemove)
+    }
   })
+
+  function onMousemove(e) {
+    if (!isClickable.value) return
+
+    const mapInstance = unref(map)
+    const feature = e.features?.[0]
+    if (!mapInstance || !feature || feature.id == null) return
+
+    const source = feature.source
+    const sourceLayerName = feature.sourceLayer ?? sourceLayer.value
+    if (source == null || sourceLayerName == null) return
+
+    if (hoveredId.value !== null && hoveredSource.value != null && hoveredSourceLayer.value != null) {
+      setHover(mapInstance, hoveredSource.value, hoveredSourceLayer.value, hoveredId.value, false)
+    }
+
+    hoveredId.value = feature.id
+    hoveredSource.value = source
+    hoveredSourceLayer.value = sourceLayerName
+    setHover(mapInstance, source, sourceLayerName, feature.id, true)
+  }
 
   function onMouseenter() {
     if (isClickable.value) {
@@ -118,6 +168,13 @@
   }
 
   function onMouseleave() {
-    unref(map).getCanvas().style.cursor = ''
+    const mapInstance = unref(map)
+    if (isClickable.value && hoveredId.value !== null && hoveredSource.value != null && hoveredSourceLayer.value != null) {
+      setHover(mapInstance, hoveredSource.value, hoveredSourceLayer.value, hoveredId.value, false)
+      hoveredId.value = null
+      hoveredSource.value = null
+      hoveredSourceLayer.value = null
+    }
+    if (mapInstance) mapInstance.getCanvas().style.cursor = ''
   }
 </script>
