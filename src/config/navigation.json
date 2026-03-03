@@ -2,11 +2,10 @@
   "logo": "/desirmed_logo.png",
   "menus": [
     {
-      "id": "baseMaps",
-      "title": "Base Maps",
+      "id": "regionSelection",
+      "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
-      "completionEvent": "auto",
       "components": [
         {
           "component": "LayerList",
@@ -28,19 +27,14 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "id": "regionSelection",
-      "title": "Region Selection",
-      "icon": "mdi-hexagon-outline",
-      "drawerTitle": "Select a region in the map",
-      "requiredSteps": [
-        "baseMaps"
       ],
-      "completionEvent": "auto",
       "wps": {
-        "identifier": "test"
+        "identifier": "lare_region",
+        "trigger": "mapClick",
+        "inputs": [
+          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" }
+        ],
+        "storeResultAs": "regionSelection"
       }
     },
     {
@@ -52,7 +46,13 @@
         "regionSelection"
       ],
       "wps": {
-        "identifier": "hazard"
+        "identifier": "lare_hazard",
+        "trigger": "stepComplete",
+        "inputs": [
+          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" },
+          { "id": "hazard", "type": "LiteralData", "source": "payload:value" }
+        ],
+        "storeResultAs": "hazard"
       },
       "components": [
         {
@@ -93,16 +93,26 @@
       "requiredSteps": [
         "hazard"
       ],
+      "wps": {
+        "identifier": "lare_uom",
+        "trigger": "stepComplete",
+        "inputs": [
+          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" },
+          { "id": "uomsize", "type": "LiteralData", "source": "payload:value" }
+        ],
+        "storeResultAs": "uom"
+      },
       "components": [
         {
           "component": "NumberInput",
           "componentProps": {
-            "label": "Hexagon size (in m)",
-            "suffix": "m",
+            "label": "Hexagon size (in m²)",
+            "suffix": "m²",
             "min": 100,
-            "max": 10000,
-            "step": 100,
-            "defaultValue": 1000
+            "max": 50000000,
+            "step": 100000,
+            "defaultValue": 1000,
+            "defaultValueSource": "wpsResult:regionSelection.suggested_uom"
           }
         }
       ]

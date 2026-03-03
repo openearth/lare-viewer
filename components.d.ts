@@ -12,12 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ActiveFeatureProperties: typeof import('./src/components/ActiveFeatureProperties.vue')['default']
-    AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
-    copy: typeof import('./src/components/HazardMenu.vue')['default']
-    HazardMenu: typeof import('./src/components/HazardMenu.vue')['default']
-    HazardSelect: typeof import('./src/components/HazardSelect.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
     LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
