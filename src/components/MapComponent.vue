@@ -14,6 +14,7 @@
         :layer="layer"
         @click="onFeatureClick"
       />
+      <MapZoomControl :feature="mapStore.activeRegion?.feature" />
       <MapboxNavigationControl position="bottom-right" />
     </mapbox-map>
   </div>
@@ -23,6 +24,8 @@
   import { MapboxMap, MapboxNavigationControl } from '@studiometa/vue-mapbox-gl'
   import { MAP_CENTER, MAP_ZOOM, MAP_BASELAYERS, MAP_BASELAYER_DEFAULT } from '@/lib/constant'
   import { useMapStore } from '@/stores/map'
+  import MapLayer from '@/components/MapLayer.vue'
+  import MapZoomControl from '@/components/MapZoomControl.vue'
   import { computed, ref } from 'vue'
   const mapStore = useMapStore()
   const accessToken = import.meta.env.VITE_MAPBOX_TOKEN

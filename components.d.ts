@@ -18,6 +18,7 @@ declare module 'vue' {
     MapboxHighlight: typeof import('./src/components/MapboxHighlight.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
     MapLayer: typeof import('./src/components/MapLayer.vue')['default']
+    MapZoomControl: typeof import('./src/components/MapZoomControl.vue')['default']
     NavigationDrawer: typeof import('./src/components/NavigationDrawer.vue')['default']
     NumberInput: typeof import('./src/components/NumberInput.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
