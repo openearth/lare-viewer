@@ -36,6 +36,10 @@
   }
 
   function onFeatureClick (feature) {
+    if (feature == null) {
+      mapStore.clearActiveRegion()
+      return
+    }
     if (feature?.layer?.id) {
       mapStore.setActiveRegion(feature.layer.id, feature)
     }

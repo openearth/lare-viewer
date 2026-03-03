@@ -12,9 +12,34 @@
         "layer": "region:nuts_2021_level_3",
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "application/vnd.mapbox-vector-tile",
+        "promoteId": "nuts_id",
         "paint": {
-            "fill-color": "transparent",
-            "fill-opacity": 1
+            "fill-color": [
+                "case",
+                [
+                    "boolean",
+                    [
+                        "feature-state",
+                        "selected"
+                    ],
+                    false
+                ],
+                "#ffcc00",
+                "transparent"
+            ],
+            "fill-opacity": [
+                "case",
+                [
+                    "boolean",
+                    [
+                        "feature-state",
+                        "selected"
+                    ],
+                    false
+                ],
+                1,
+                0.7
+            ]
         },
         "vectorType": "fill",
         "minZoom": 0

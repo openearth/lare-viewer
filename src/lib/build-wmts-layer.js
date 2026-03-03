@@ -11,6 +11,7 @@ function buildWmtsLayer ({
   bbox = [],
   format,
   vectorType,
+  promoteId,
   minZoom,
   maxZoom,
 }) {
@@ -40,6 +41,7 @@ function buildWmtsLayer ({
         type: 'vector',
         tiles: [ tile ],
         ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
+        ...(promoteId && { promoteId: { [layer.split(':')[1]]: promoteId } }),
       },
       'source-layer': layer.split(':')[1],
       paint,
