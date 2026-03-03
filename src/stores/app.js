@@ -6,6 +6,7 @@ export const useAppStore = defineStore('app', {
     activeMenu: null,
     completedSteps: [],
     wpsResults: {},
+    selections: {},
   }),
 
   getters: {
@@ -40,6 +41,14 @@ export const useAppStore = defineStore('app', {
 
     setWpsResult (key, result) {
       this.wpsResults[key] = result
+    },
+
+    setSelection (key, value) {
+      if (value == null) {
+        delete this.selections[key]
+      } else {
+        this.selections[key] = value
+      }
     },
 
     resetStepsFrom (stepId) {

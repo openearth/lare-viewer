@@ -4,7 +4,7 @@
       Data Layers
     </v-list-item>
 
-    <template v-for="layer in layers" :key="layer.id">
+    <template v-for="layer in filteredLayers" :key="layer.id">
       <v-list-item>
         <template #prepend>
           <v-switch
@@ -32,20 +32,46 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue'
+  import { computed, onMounted, watch } from 'vue'
+  import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import ActiveFeatureProperties from '@/components/ActiveFeatureProperties.vue'
 
   const props = defineProps({
     layers: { type: Array, required: true },
+    conditionSource: { type: String, default: null },
   })
 
+  const appStore = useAppStore()
   const mapStore = useMapStore()
+
+  const filteredLayers = computed(() => {
+    if (!props.conditionSource) {
+      return props.layers
+    }
+    const selected = appStore.selections[props.conditionSource]
+    return props.layers.filter(
+      layer => !layer.condition || layer.condition === selected,
+    )
+  })
+
+  function syncVisibilityToFilter () {
+    if (!props.conditionSource) return
+    const ids = new Set(filteredLayers.value.map(l => l.id))
+    for (const layer of props.layers) {
+      if (!ids.has(layer.id)) {
+        mapStore.setLayerVisibility(layer.id, false)
+      }
+    }
+  }
 
   onMounted(() => {
     mapStore.initializeLayerVisibility(props.layers)
     mapStore.initializeLayerClickable(props.layers)
+    syncVisibilityToFilter()
   })
+
+  watch(filteredLayers, syncVisibilityToFilter)
 </script>
 
 <style scoped>

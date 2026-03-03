@@ -26,5 +26,26 @@
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "image/png",
         "minZoom": 0
+    },
+    {
+        "id": "topography:hybas_eu_lev12_v1c",
+        "name": "hydrobasins",
+        "layer": "topography:hybas_eu_lev12_v1c",
+        "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
+        "format": "application/vnd.mapbox-vector-tile",
+        "paint": {
+            "fill-color": "transparent",
+            "fill-opacity": 1
+        },
+        "vectorType": "fill",
+        "minZoom": 0
+    },
+    {
+        "id": "topography:hybas_eu_lev12_v1c",
+        "name": "hydrobasins",
+        "layer": "topography:hybas_eu_lev12_v1c",
+        "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
+        "format": "image/png",
+        "minZoom": 0
     }
 ]
