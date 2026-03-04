@@ -34,9 +34,7 @@
   import { computed, shallowRef, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
-  import sendWpsRequest from '@/lib/wps'
-  import { resolveInputs } from '@/lib/wps/resolve-input'
-  import { handleOutputActions } from '@/lib/wps/handle-output'
+  import { executeWpsConfig } from '@/lib/wps/execute-config'
 
   const props = defineProps({
     menuId: { type: String, required: true },
@@ -117,27 +115,11 @@
     if (!props.wps) return
 
     try {
-      const baseUrl = import.meta.env.VITE_WPS_BASE_URL
-      const { identifier, outputActions, storeResultAs } = props.wps
-
-      const stores = { app: store, map: mapStore }
-      const context = { payload, stores }
-
-      const inputs = resolveInputs(props.wps.inputs, context)
-      const result = await sendWpsRequest({
-        baseUrl,
-        identifier,
-        inputs,
+      const result = await executeWpsConfig(props.wps, {
+        payload,
+        appStore: store,
+        mapStore,
       })
-
-      if (storeResultAs) {
-        store.setWpsResult(storeResultAs, result)
-      }
-
-      if (outputActions) {
-        handleOutputActions(outputActions, result, stores)
-      }
-
       addWpsLayers(result)
     } catch (error) {
       console.error(`WPS request failed for step "${ props.menuId }":`, error)

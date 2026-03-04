@@ -1,5 +1,13 @@
 {
   "logo": "/desirmed_logo.png",
+  "initialSetup": {
+    "wps": {
+      "identifier": "lare_start",
+      "trigger": "onStart",
+      "inputs": [],
+      "storeResultAs": "initialSetup"
+    }
+  },
   "steps": [
     {
       "id": "userCaseSelection",
