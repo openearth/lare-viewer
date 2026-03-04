@@ -1,7 +1,7 @@
 <template>
   <div class="selection-list pa-4">
     <v-select
-      v-model="selected"
+      v-model="pending"
       :items="options"
       :label="label"
       item-title="name"
@@ -11,11 +11,21 @@
       clearable
       hide-details
     />
+    <v-btn
+      class="mt-3"
+      color="primary"
+      variant="flat"
+      block
+      :disabled="pending == null"
+      @click="confirm"
+    >
+      Confirm
+    </v-btn>
   </div>
 </template>
 
 <script setup>
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useAppStore } from '@/stores/app'
 
   const props = defineProps({
@@ -26,20 +36,19 @@
 
   const emit = defineEmits(['step-complete'])
   const appStore = useAppStore()
-  const selected = ref(null)
+  const pending = ref(null)
 
   onMounted(() => {
     if (props.selectionKey && appStore.selections[props.selectionKey] != null) {
-      selected.value = appStore.selections[props.selectionKey]
+      pending.value = appStore.selections[props.selectionKey]
     }
   })
 
-  watch(selected, (value) => {
+  function confirm () {
+    if (pending.value == null) return
     if (props.selectionKey) {
-      appStore.setSelection(props.selectionKey, value)
+      appStore.setSelection(props.selectionKey, pending.value)
     }
-    if (value != null) {
-      emit('step-complete', { value })
-    }
-  })
+    emit('step-complete', { value: pending.value })
+  }
 </script>
