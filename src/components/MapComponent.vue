@@ -24,10 +24,12 @@
   import { MapboxMap, MapboxNavigationControl } from '@studiometa/vue-mapbox-gl'
   import { MAP_CENTER, MAP_ZOOM, MAP_BASELAYERS, MAP_BASELAYER_DEFAULT } from '@/lib/constant'
   import { useMapStore } from '@/stores/map'
+  import { useAppStore } from '@/stores/app'
   import MapLayer from '@/components/MapLayer.vue'
   import MapZoomControl from '@/components/MapZoomControl.vue'
   import { computed, ref } from 'vue'
   const mapStore = useMapStore()
+  const appStore = useAppStore()
   const accessToken = import.meta.env.VITE_MAPBOX_TOKEN
   const activeStyleTitle = ref(MAP_BASELAYER_DEFAULT.title)
   const activeStyleUri = computed(() => MAP_BASELAYERS.find(style => style.title === activeStyleTitle.value).uri)
@@ -39,14 +41,20 @@
   }
 
   function onFeatureClick (feature) {
-    console.log('onFeatureClick', feature)
     if (feature == null) {
       mapStore.clearActiveRegion()
       return
     }
-    if (feature?.layer?.id) {
-      mapStore.setActiveRegion(feature.layer.id, feature)
-    }
+    if (!feature?.layer?.id) return
+    const layerId = feature.layer.id
+    const selection = appStore.selections.userCaseSelection
+    const regionIdProperty =
+      selection != null &&
+      typeof selection === 'object' &&
+      selection.layerName === layerId
+        ? selection.regionIdProperty
+        : null
+    mapStore.setActiveRegion(layerId, feature, regionIdProperty ?? undefined)
   }
 
 </script>

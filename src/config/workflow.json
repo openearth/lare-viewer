@@ -25,11 +25,17 @@
             "options": [
               {
                 "id": "administration",
-                "name": "Administration"
+                "name": "Administration",
+                "layerName": "region:nuts_2021_level_3",
+                "regionIdProperty": "nuts_id",
+                "layerNameForWPS": "region:nuts_2021"
               },
               {
                 "id": "hydrobasin",
-                "name": "Hydro basin"
+                "name": "Hydro basin",
+                "layerName": "topography:hybas_eu_lev12_v1c",
+                "regionIdProperty": "hybas_id",
+                "layerNameForWPS": "hydro:hybas_eu_lev12_v1c"
               }
             ]
           }
@@ -95,17 +101,33 @@
         "trigger": "component",
         "inputs": [
           {
-            "id": "nutsname",
+            "id": "sessionid",
             "type": "LiteralData",
-            "source": "store:map.activeRegion.properties.nuts_name"
+            "source": "store:app.wpsResults.initialSetup.sessionid"
           },
           {
             "id": "uomsize",
             "type": "LiteralData",
             "source": "payload:value"
+          },
+          {
+            "id": "layername",
+            "type": "LiteralData",
+            "source": "store:app.selections.userCaseSelection.layerNameForWPS"
+          },
+          {
+            "id": "id",
+            "type": "LiteralData",
+            "source": "store:map.activeRegionId"
           }
         ],
-        "storeResultAs": "uom"
+        "storeResultAs": "uom",
+        "outputActions": [
+          {
+            "action": "addLayer",
+            "path": "layers"
+          }
+        ]
       },
       "components": [
         {

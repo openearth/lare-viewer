@@ -10,6 +10,7 @@ export const useMapStore = defineStore('map', {
     layerVisibility: {},
     layerClickable: {},
     activeRegion: null,
+    activeRegionId: null,
   }),
   
   getters: {
@@ -138,17 +139,21 @@ export const useMapStore = defineStore('map', {
       this.layerVisibility[layerId] = isVisible
     },
     
-    setActiveRegion (layerId, feature) {
-      console.log('setActiveRegion', layerId, feature)
+    setActiveRegion (layerId, feature, regionIdProperty = null) {
       this.activeRegion = {
         layerId: layerId,
         properties: feature.properties || {},
         feature: feature,
       }
+      this.activeRegionId =
+        regionIdProperty && feature.properties && feature.properties[regionIdProperty] != null
+          ? feature.properties[regionIdProperty]
+          : null
     },
-    
+
     clearActiveRegion () {
       this.activeRegion = null
+      this.activeRegionId = null
     },
 
     addDynamicLayer (layerConfig) {
