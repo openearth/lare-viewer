@@ -64,5 +64,16 @@ export const useAppStore = defineStore('app', {
         }
       }
     },
+
+    openNextStep (currentStepId) {
+      const steps = config.steps
+      const index = steps.findIndex(s => s.id === currentStepId)
+      const nextStep = index >= 0 && index < steps.length - 1 ? steps[index + 1] : null
+      if (nextStep && this.isStepAvailable(nextStep)) {
+        this.activeMenu = nextStep.id
+      } else {
+        this.activeMenu = null
+      }
+    },
   },
 })

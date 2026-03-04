@@ -27,6 +27,8 @@
     :drawer-title="step.drawerTitle"
     :components="step.components"
     :completion-event="step.completionEvent"
+    :requires-confirmation="step.requiresConfirmation || false"
+    :confirmation-source="step.confirmationSource || 'component'"
     :wps="step.wps || null"
   />
 </template>

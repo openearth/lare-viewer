@@ -12,16 +12,6 @@
       color="primary"
       hide-details
     />
-    <v-btn
-      class="mt-2"
-      color="primary"
-      variant="tonal"
-      block
-      size="small"
-      @click="confirm"
-    >
-      Confirm
-    </v-btn>
   </div>
 </template>
 
@@ -40,7 +30,7 @@
     defaultValueSource: { type: String, default: null },
   })
 
-  const emit = defineEmits(['step-complete'])
+  const emit = defineEmits(['step-ready'])
   const appStore = useAppStore()
 
   const resolvedDefault = computed(() => {
@@ -60,7 +50,9 @@
     }
   })
 
-  function confirm () {
-    emit('step-complete', { value: value.value })
-  }
+  watch(value, (newVal) => {
+    if (newVal != null && newVal >= props.min && newVal <= props.max) {
+      emit('step-ready', { value: newVal })
+    }
+  }, { immediate: true })
 </script>

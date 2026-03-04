@@ -5,28 +5,47 @@
     class="sub-menu-drawer"
     width="250"
   >
-    <v-list-item>
-      <v-list-item-title class="font-weight-bold drawer-title">
-        {{ drawerTitle }}
-      </v-list-item-title>
-      <template #append>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          style="margin-top: 10px;"
-          @click="isOpen = false"
-        />
-      </template>
-    </v-list-item>
+    <div class="sub-menu-drawer__inner">
+      <v-list-item class="sub-menu-drawer__header">
+        <v-list-item-title class="font-weight-bold drawer-title">
+          {{ drawerTitle }}
+        </v-list-item-title>
+        <template #append>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            style="margin-top: 10px;"
+            @click="isOpen = false"
+          />
+        </template>
+      </v-list-item>
 
-    <component
-      :is="comp.component"
-      v-for="(comp, index) in validComponents"
-      :key="index"
-      v-bind="comp.props"
-      @step-complete="onStepComplete"
-    />
+      <div class="sub-menu-drawer__content">
+        <component
+          :is="comp.component"
+          v-for="(comp, index) in validComponents"
+          :key="index"
+          v-bind="comp.props"
+          @step-complete="onChildStepComplete"
+          @step-ready="onStepReady"
+        />
+      </div>
+
+      <div class="sub-menu-drawer__footer">
+        <v-btn
+          class="sub-menu-drawer__confirm"
+          color="primary"
+          variant="tonal"
+          block
+          size="small"
+          :disabled="props.requiresConfirmation && !stepReadyPayload"
+          @click="onConfirmClick"
+        >
+          Confirm
+        </v-btn>
+      </div>
+    </div>
   </v-navigation-drawer>
 </template>
 
@@ -41,12 +60,15 @@
     drawerTitle: { type: String, required: true },
     components: { type: Array, default: () => [] },
     completionEvent: { type: String, default: null },
+    requiresConfirmation: { type: Boolean, default: false },
+    confirmationSource: { type: String, default: 'component' },
     wps: { type: Object, default: null },
   })
 
   const store = useAppStore()
   const mapStore = useMapStore()
   const loadedComponents = shallowRef([])
+  const stepReadyPayload = shallowRef(null)
 
   const modules = import.meta.glob('@/components/*.vue')
 
@@ -80,15 +102,27 @@
     set: (value) => {
       if (!value && store.activeMenu === props.menuId) {
         store.closeMenu()
+        stepReadyPayload.value = null
       }
     },
   })
 
   // --- Step completion (independent of WPS) ---
 
-  watch(isOpen, (open) => {
+  watch(isOpen, async (open) => {
+    if (open) {
+      stepReadyPayload.value = null
+    }
     if (open && props.completionEvent === 'auto' && !store.isStepCompleted(props.menuId)) {
       completeStep()
+    }
+    if (open && props.confirmationSource === 'wps' && props.wps?.trigger === 'stepOpen') {
+      try {
+        const result = await executeWpsOnly({})
+        stepReadyPayload.value = result != null ? { result } : {}
+      } catch (error) {
+        console.error(`WPS request failed for step "${ props.menuId }" (stepOpen):`, error)
+      }
     }
   })
 
@@ -111,20 +145,24 @@
     })
   }
 
-  async function executeWps (payload = {}) {
-    if (!props.wps) return
+  async function executeWpsOnly (payload = {}) {
+    if (!props.wps) return null
+    const result = await executeWpsConfig(props.wps, {
+      payload,
+      appStore: store,
+      mapStore,
+    })
+    addWpsLayers(result)
+    return result
+  }
 
+  async function executeWps (payload = {}) {
     try {
-      const result = await executeWpsConfig(props.wps, {
-        payload,
-        appStore: store,
-        mapStore,
-      })
-      addWpsLayers(result)
+      await executeWpsOnly(payload)
     } catch (error) {
       console.error(`WPS request failed for step "${ props.menuId }":`, error)
+      return
     }
-
     completeStep()
   }
 
@@ -149,12 +187,37 @@
     }
   }
 
-  function onStepComplete (payload) {
+  function onChildStepComplete (payload) {
+    if (props.requiresConfirmation) {
+      stepReadyPayload.value = payload || {}
+    } else {
+      onStepComplete(payload)
+    }
+  }
+
+  function onStepReady (payload) {
+    stepReadyPayload.value = payload || {}
+  }
+
+  async function onStepComplete (payload) {
     if (wpsTrigger === 'stepComplete') {
-      executeWps(payload)
+      await executeWps(payload)
     } else {
       completeStep()
     }
+  }
+
+  async function onConfirmClick () {
+    if (props.requiresConfirmation && !stepReadyPayload.value) return
+    const payload = stepReadyPayload.value || {}
+    stepReadyPayload.value = null
+    if (props.confirmationSource === 'wps') {
+      completeStep()
+      store.openNextStep(props.menuId)
+      return
+    }
+    await onStepComplete(payload)
+    store.openNextStep(props.menuId)
   }
 </script>
 
@@ -163,10 +226,36 @@
   position: absolute;
   left: 210px !important;
   height: fit-content !important;
-  max-height: calc(100% - 50px * 2);
+  max-height: calc(100vh - 100px);
   margin-top: 50px;
   border-radius: 28px;
-  padding-bottom: 10px;
+}
+
+.sub-menu-drawer :deep(.v-navigation-drawer__content) {
+  display: block;
+}
+
+.sub-menu-drawer__inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-menu-drawer__header {
+  flex-shrink: 0;
+}
+
+.sub-menu-drawer__content {
+  overflow-y: auto;
+  max-height: min(60vh, 400px);
+}
+
+.sub-menu-drawer__footer {
+  flex-shrink: 0;
+  padding: 12px 16px 16px;
+}
+
+.sub-menu-drawer__confirm {
+  margin: 0;
 }
 
 .drawer-title {

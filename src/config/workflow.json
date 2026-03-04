@@ -13,6 +13,8 @@
       "id": "userCaseSelection",
       "title": "Use Case",
       "drawerTitle": "Select your use case",
+      "requiresConfirmation": true,
+      "confirmationSource": "component",
       "components": [
         {
           "component": "SelectionList",
@@ -41,6 +43,8 @@
       "requiredSteps": [
         "userCaseSelection"
       ],
+      "requiresConfirmation": true,
+      "confirmationSource": "component",
       "components": [
         {
           "component": "LayerList",
@@ -81,6 +85,8 @@
       "requiredSteps": [
         "hazard"
       ],
+      "requiresConfirmation": true,
+      "confirmationSource": "component",
       "wps": {
         "identifier": "lare_uom",
         "trigger": "stepComplete",
@@ -109,55 +115,6 @@
             "step": 100000,
             "defaultValue": 1000,
             "defaultValueSource": "wpsResult:regionSelection.suggested_uom"
-          }
-        }
-      ]
-    },
-    {
-      "id": "assets",
-      "title": "Assets",
-      "drawerTitle": "Select an asset type",
-      "icon": "mdi-city-variant-outline",
-      "requiredSteps": [
-        "uom"
-      ],
-      "completionEvent": "auto",
-      "components": [
-        {
-          "component": "LayerList",
-          "componentProps": {
-            "layers": [
-              {
-                "id": "assets-roads",
-                "name": "Roads",
-                "active": false,
-                "clickable": false
-              },
-              {
-                "id": "assets-schools",
-                "name": "Schools",
-                "active": false,
-                "clickable": false
-              },
-              {
-                "id": "assets-hospitals",
-                "name": "Hospitals",
-                "active": false,
-                "clickable": false
-              },
-              {
-                "id": "assets-power-grid",
-                "name": "Power Grid",
-                "active": false,
-                "clickable": false
-              },
-              {
-                "id": "assets-bridges",
-                "name": "Bridges",
-                "active": false,
-                "clickable": false
-              }
-            ]
           }
         }
       ]
