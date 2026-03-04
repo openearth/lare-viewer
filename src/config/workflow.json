@@ -1,6 +1,6 @@
 {
   "logo": "/desirmed_logo.png",
-  "menus": [
+  "steps": [
     {
       "id": "userCaseSelection",
       "title": "Use Case",
@@ -59,62 +59,6 @@
                 "active": true,
                 "clickable": true,
                 "condition": "hydrobasin"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "hazard",
-      "title": "Hazard mitigation selection",
-      "icon": "mdi-alert-circle-outline",
-      "drawerTitle": "Select a hazard mitigation from the list",
-      "requiredSteps": [
-        "regionSelection"
-      ],
-      "wps": {
-        "identifier": "lare_hazard",
-        "trigger": "stepComplete",
-        "inputs": [
-          {
-            "id": "nutsname",
-            "type": "LiteralData",
-            "source": "store:map.activeRegion.properties.nuts_name"
-          },
-          {
-            "id": "hazard",
-            "type": "LiteralData",
-            "source": "payload:value"
-          }
-        ],
-        "storeResultAs": "hazard"
-      },
-      "components": [
-        {
-          "component": "SelectionList",
-          "componentProps": {
-            "label": "Hazard mitigation maps",
-            "options": [
-              {
-                "id": "flood",
-                "name": "Flood mitigation"
-              },
-              {
-                "id": "fire",
-                "name": "Fire mitigation"
-              },
-              {
-                "id": "erosion",
-                "name": "Erosion mitigation"
-              },
-              {
-                "id": "heat",
-                "name": "Heatwave mitigation"
-              },
-              {
-                "id": "drought",
-                "name": "Drought mitigation"
               }
             ]
           }

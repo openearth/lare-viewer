@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import config from '@/config/navigation.json'
+import config from '@/config/workflow.json'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -14,11 +14,11 @@ export const useAppStore = defineStore('app', {
       return state.completedSteps.includes(stepId)
     },
 
-    isStepAvailable: (state) => (menu) => {
-      if (!menu.requiredSteps || menu.requiredSteps.length === 0) {
+    isStepAvailable: (state) => (step) => {
+      if (!step.requiredSteps || step.requiredSteps.length === 0) {
         return true
       }
-      return menu.requiredSteps.every(
+      return step.requiredSteps.every(
         reqId => state.completedSteps.includes(reqId),
       )
     },
@@ -52,10 +52,10 @@ export const useAppStore = defineStore('app', {
     },
 
     resetStepsFrom (stepId) {
-      const menus = config.menus
-      const index = menus.findIndex(m => m.id === stepId)
+      const steps = config.steps
+      const index = steps.findIndex(s => s.id === stepId)
       if (index >= 0) {
-        const toRemove = menus.slice(index + 1).map(m => m.id)
+        const toRemove = steps.slice(index + 1).map(s => s.id)
         this.completedSteps = this.completedSteps.filter(
           id => !toRemove.includes(id),
         )

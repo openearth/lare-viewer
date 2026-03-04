@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import layersConfig from '@/data/base-layers-config.json'
+import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
 
 export const useMapStore = defineStore('map', {

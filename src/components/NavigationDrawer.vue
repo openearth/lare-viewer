@@ -11,36 +11,36 @@
       />
     </v-list-item>
     <v-list-item
-      v-for="menu in config.menus"
-      :key="menu.id"
-      :title="menu.title"
-      :disabled="!store.isStepAvailable(menu)"
-      :class="{ 'step-locked': !store.isStepAvailable(menu) }"
-      @click="handleMenuClick(menu)"
+      v-for="step in config.steps"
+      :key="step.id"
+      :title="step.title"
+      :disabled="!store.isStepAvailable(step)"
+      :class="{ 'step-locked': !store.isStepAvailable(step) }"
+      @click="handleStepClick(step)"
     />
   </v-navigation-drawer>
 
   <sub-menu
-    v-for="menu in config.menus"
-    :key="menu.id"
-    :menu-id="menu.id"
-    :drawer-title="menu.drawerTitle"
-    :components="menu.components"
-    :completion-event="menu.completionEvent"
-    :wps="menu.wps || null"
+    v-for="step in config.steps"
+    :key="step.id"
+    :menu-id="step.id"
+    :drawer-title="step.drawerTitle"
+    :components="step.components"
+    :completion-event="step.completionEvent"
+    :wps="step.wps || null"
   />
 </template>
 
 <script setup>
   import { useAppStore } from '@/stores/app'
   import SubMenu from '@/components/SubMenu.vue'
-  import config from '@/config/navigation.json'
+  import config from '@/config/workflow.json'
 
   const store = useAppStore()
 
-  function handleMenuClick (menu) {
-    if (!store.isStepAvailable(menu)) return
-    store.toggleMenu(menu.id)
+  function handleStepClick (step) {
+    if (!store.isStepAvailable(step)) return
+    store.toggleMenu(step.id)
   }
 </script>
 

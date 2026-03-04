@@ -71,7 +71,7 @@
   import { computed, ref, watch } from 'vue'
   import { useMapStore } from '@/stores/map'
   import buildLegendUrl from '@/lib/build-legend-url'
-  import navigationConfig from '@/config/navigation.json'
+  import navigationConfig from '@/config/workflow.json'
 
   const mapStore = useMapStore()
   const failedImageIds = ref(new Set())
@@ -106,9 +106,9 @@
   })
 
   function getLayerNameFromNavigation (layerId) {
-    for (const menu of navigationConfig.menus) {
-      if (menu.components) {
-        for (const component of menu.components) {
+    for (const step of navigationConfig.steps) {
+      if (step.components) {
+        for (const component of step.components) {
           if (component.component === 'LayerList' && component.componentProps?.layers) {
             const layer = component.componentProps.layers.find(l => l.id === layerId)
             if (layer) {
