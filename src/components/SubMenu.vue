@@ -124,9 +124,6 @@
       const context = { payload, stores }
 
       const inputs = resolveInputs(props.wps.inputs, context)
-      console.log("inputs", inputs)
-      console.log("baseUrl", baseUrl)
-      console.log("identifier", identifier)
       const result = await sendWpsRequest({
         baseUrl,
         identifier,
