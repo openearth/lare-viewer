@@ -63,19 +63,7 @@
             ]
           }
         }
-      ],
-      "wps": {
-        "identifier": "lare_region",
-        "trigger": "mapClick",
-        "inputs": [
-          {
-            "id": "nutsname",
-            "type": "LiteralData",
-            "source": "store:map.activeRegion.properties.nuts_name"
-          }
-        ],
-        "storeResultAs": "regionSelection"
-      }
+      ]
     },
     {
       "id": "hazard",
