@@ -39,6 +39,7 @@
   }
 
   function onFeatureClick (feature) {
+    console.log('onFeatureClick', feature)
     if (feature == null) {
       mapStore.clearActiveRegion()
       return

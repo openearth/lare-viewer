@@ -29,6 +29,7 @@
     :completion-event="step.completionEvent"
     :requires-confirmation="step.requiresConfirmation || false"
     :confirmation-source="step.confirmationSource || 'component'"
+    :explanation="step.explanation || ''"
     :wps="step.wps || null"
   />
 </template>

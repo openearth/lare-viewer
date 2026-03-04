@@ -29,10 +29,17 @@
           v-bind="comp.props"
           @step-complete="onChildStepComplete"
           @step-ready="onStepReady"
+          @run-wps="onRunWps"
         />
       </div>
 
       <div class="sub-menu-drawer__footer">
+        <p
+          v-if="props.explanation"
+          class="sub-menu-drawer__explanation text-body-2 text-medium-emphasis"
+        >
+          {{ props.explanation }}
+        </p>
         <v-btn
           class="sub-menu-drawer__confirm"
           color="primary"
@@ -62,6 +69,7 @@
     completionEvent: { type: String, default: null },
     requiresConfirmation: { type: Boolean, default: false },
     confirmationSource: { type: String, default: 'component' },
+    explanation: { type: String, default: '' },
     wps: { type: Object, default: null },
   })
 
@@ -125,6 +133,14 @@
       }
     }
   })
+
+  if (props.confirmationSource === 'mapClick') {
+    watch([isOpen, () => mapStore.activeRegion], ([open, region]) => {
+      if (open && region) {
+        stepReadyPayload.value = { region }
+      }
+    })
+  }
 
   function completeStep () {
     if (store.isStepCompleted(props.menuId)) {
@@ -199,6 +215,16 @@
     stepReadyPayload.value = payload || {}
   }
 
+  async function onRunWps (payload) {
+    if (props.wps?.trigger !== 'component') return
+    try {
+      const result = await executeWpsOnly(payload || {})
+      stepReadyPayload.value = result != null ? { result } : {}
+    } catch (error) {
+      console.error(`WPS request failed for step "${ props.menuId }" (run-wps):`, error)
+    }
+  }
+
   async function onStepComplete (payload) {
     if (wpsTrigger === 'stepComplete') {
       await executeWps(payload)
@@ -211,7 +237,7 @@
     if (props.requiresConfirmation && !stepReadyPayload.value) return
     const payload = stepReadyPayload.value || {}
     stepReadyPayload.value = null
-    if (props.confirmationSource === 'wps') {
+    if (props.confirmationSource === 'wps' || props.confirmationSource === 'mapClick') {
       completeStep()
       store.openNextStep(props.menuId)
       return
@@ -252,6 +278,11 @@
 .sub-menu-drawer__footer {
   flex-shrink: 0;
   padding: 12px 16px 16px;
+}
+
+.sub-menu-drawer__explanation {
+  margin: 0 0 12px 0;
+  line-height: 1.4;
 }
 
 .sub-menu-drawer__confirm {

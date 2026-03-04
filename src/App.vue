@@ -22,16 +22,21 @@
 
   onMounted(async () => {
     const wps = workflowConfig.initialSetup?.wps
-    if (wps?.trigger !== 'onStart') return
+    if (wps?.trigger === 'onStart') {
+      try {
+        await executeWpsConfig(wps, {
+          payload: {},
+          appStore,
+          mapStore,
+        })
+      } catch (error) {
+        console.error('Initial setup WPS request failed:', error)
+      }
+    }
 
-    try {
-      await executeWpsConfig(wps, {
-        payload: {},
-        appStore,
-        mapStore,
-      })
-    } catch (error) {
-      console.error('Initial setup WPS request failed:', error)
+    const firstStep = workflowConfig.steps?.[0]
+    if (firstStep) {
+      appStore.toggleMenu(firstStep.id)
     }
   })
 </script>

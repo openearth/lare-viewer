@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import area from '@turf/area'
 import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
 
@@ -63,8 +64,18 @@ export const useMapStore = defineStore('map', {
       
       return visible
     },
+
+    suggestedUom: (state) => {
+      const feature = state.activeRegion?.feature
+      if (!feature) return null
+
+      const geomArea = area(feature)
+      if (!Number.isFinite(geomArea)) return null
+
+      return Math.floor(geomArea / 1000)
+    },
   },
-  
+
   actions: {
     initializeMapboxLayers () {
       const configMap = new Map()
@@ -128,6 +139,7 @@ export const useMapStore = defineStore('map', {
     },
     
     setActiveRegion (layerId, feature) {
+      console.log('setActiveRegion', layerId, feature)
       this.activeRegion = {
         layerId: layerId,
         properties: feature.properties || {},

@@ -13,6 +13,7 @@
       "id": "userCaseSelection",
       "title": "Use Case",
       "drawerTitle": "Select your use case",
+      "explanation": "Choose the use case that matches your analysis, then confirm to continue.",
       "requiresConfirmation": true,
       "confirmationSource": "component",
       "components": [
@@ -43,8 +44,9 @@
       "requiredSteps": [
         "userCaseSelection"
       ],
+      "explanation": "Select a region on the map by clicking it, then confirm to continue.",
       "requiresConfirmation": true,
-      "confirmationSource": "component",
+      "confirmationSource": "mapClick",
       "components": [
         {
           "component": "LayerList",
@@ -83,13 +85,14 @@
       "icon": "mdi-city-variant-outline",
       "drawerTitle": "Calculate UOM",
       "requiredSteps": [
-        "hazard"
+        "regionSelection"
       ],
+      "explanation": "Enter the hexagon size, click the calculator to run the UOM calculation, then confirm to continue.",
       "requiresConfirmation": true,
-      "confirmationSource": "component",
+      "confirmationSource": "wps",
       "wps": {
         "identifier": "lare_uom",
-        "trigger": "stepComplete",
+        "trigger": "component",
         "inputs": [
           {
             "id": "nutsname",
@@ -114,7 +117,8 @@
             "max": 50000000,
             "step": 100000,
             "defaultValue": 1000,
-            "defaultValueSource": "wpsResult:regionSelection.suggested_uom"
+            "defaultValueSource": "store:map.suggestedUom",
+            "showCalcButton": true
           }
         }
       ]
