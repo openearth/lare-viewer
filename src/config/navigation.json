@@ -2,14 +2,42 @@
   "logo": "/desirmed_logo.png",
   "menus": [
     {
+      "id": "userCaseSelection",
+      "title": "Use Case",
+      "drawerTitle": "Select your use case",
+      "components": [
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "Use cases",
+            "selectionKey": "userCaseSelection",
+            "options": [
+              {
+                "id": "administration",
+                "name": "Administration"
+              },
+              {
+                "id": "hydrobasin",
+                "name": "Hydro basin"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "id": "regionSelection",
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
+      "requiredSteps": [
+        "userCaseSelection"
+      ],
       "components": [
         {
           "component": "LayerList",
           "componentProps": {
+            "conditionSource": "userCaseSelection",
             "layers": [
               {
                 "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
@@ -22,20 +50,20 @@
                 "name": "NUTS 3 Regions",
                 "active": true,
                 "clickable": true,
-                "propertiesBox": "region"
+                "propertiesBox": "region",
+                "condition": "administration"
+              },
+              {
+                "id": "topography:hybas_eu_lev12_v1c",
+                "name": "Hydro Basins",
+                "active": true,
+                "clickable": true,
+                "condition": "hydrobasin"
               }
             ]
           }
         }
-      ],
-      "wps": {
-        "identifier": "lare_region",
-        "trigger": "mapClick",
-        "inputs": [
-          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" }
-        ],
-        "storeResultAs": "regionSelection"
-      }
+      ]
     },
     {
       "id": "hazard",
@@ -49,8 +77,16 @@
         "identifier": "lare_hazard",
         "trigger": "stepComplete",
         "inputs": [
-          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" },
-          { "id": "hazard", "type": "LiteralData", "source": "payload:value" }
+          {
+            "id": "nutsname",
+            "type": "LiteralData",
+            "source": "store:map.activeRegion.properties.nuts_name"
+          },
+          {
+            "id": "hazard",
+            "type": "LiteralData",
+            "source": "payload:value"
+          }
         ],
         "storeResultAs": "hazard"
       },
@@ -97,8 +133,16 @@
         "identifier": "lare_uom",
         "trigger": "stepComplete",
         "inputs": [
-          { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" },
-          { "id": "uomsize", "type": "LiteralData", "source": "payload:value" }
+          {
+            "id": "nutsname",
+            "type": "LiteralData",
+            "source": "store:map.activeRegion.properties.nuts_name"
+          },
+          {
+            "id": "uomsize",
+            "type": "LiteralData",
+            "source": "payload:value"
+          }
         ],
         "storeResultAs": "uom"
       },

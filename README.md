@@ -179,11 +179,86 @@ Different components expect different props:
     - `active`: Whether the layer is initially visible.
     - `clickable`: Whether clicking the map interacts with this layer.
     - `propertiesBox` (optional): Name of a properties box configuration (used for showing feature attributes).
+  - **`conditionSource`** (optional): Name of a selection key to use when conditionally enabling layers (see “Use case selection and `selectionKey`” below).
 - **`SelectionList`**:
   - **`label`**: Label shown above the list.
   - **`options`**: Array of `{ "id": "value", "name": "Label" }` entries.
+  - **`selectionKey`** (optional): Name under which the selected value is stored in the app store (`app.selections[selectionKey]`). If omitted, the value is only passed via the `step-complete` payload.
 - **`NumberInput`**:
   - Typical props include `label`, `suffix`, `min`, `max`, `step`, `defaultValue`, and `defaultValueSource` (see below under WPS input sources).
+
+### Use case selection and `selectionKey`
+
+In more advanced workflows, you can introduce an explicit “use case” selection step and use its stored value to drive which layers are shown later.
+
+Example:
+
+```json
+{
+  "id": "userCaseSelection",
+  "title": "Use Case",
+  "drawerTitle": "Select your use case",
+  "components": [
+    {
+      "component": "SelectionList",
+      "componentProps": {
+        "label": "Use cases",
+        "selectionKey": "userCaseSelection",
+        "options": [
+          { "id": "administration", "name": "Administration" },
+          { "id": "hydrobasin", "name": "Hydro basin" }
+        ]
+      }
+    }
+  ]
+}
+```
+
+With this configuration:
+
+- **`SelectionList`**:
+  - Stores the chosen option under `app.selections.userCaseSelection` using `selectionKey`.
+  - Emits `step-complete` with a payload `{ "value": "<selected id>" }`, which can be used by WPS inputs via `source: "payload:value"`.
+
+You can then make a later step conditionally show layers depending on this value by combining `conditionSource` and per-layer `condition` values:
+
+```json
+{
+  "id": "regionSelection",
+  "title": "Region Selection",
+  "requiredSteps": ["userCaseSelection"],
+  "components": [
+    {
+      "component": "LayerList",
+      "componentProps": {
+        "conditionSource": "userCaseSelection",
+        "layers": [
+          {
+            "id": "region:nuts_2021_level_3",
+            "name": "NUTS 3 Regions",
+            "active": true,
+            "clickable": true,
+            "propertiesBox": "region",
+            "condition": "administration"
+          },
+          {
+            "id": "topography:hybas_eu_lev12_v1c",
+            "name": "Hydro Basins",
+            "active": true,
+            "clickable": true,
+            "condition": "hydrobasin"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+- **`conditionSource`** tells `LayerList` to read from `app.selections.userCaseSelection`.
+- Each layer’s **`condition`** is compared to that value. Only layers matching the current selection are considered active/visible in the workflow.
+
+This pattern lets you implement a “step 0” use case selection (e.g. NUTS vs Hydrobasins) entirely through configuration, without changing application code.
 
 ### Wiring menus together with `requiredSteps`
 
