@@ -58,6 +58,7 @@
                 "name": "Hydro Basins",
                 "active": true,
                 "clickable": true,
+                "propertiesBox": "hydrobasin",
                 "condition": "hydrobasin"
               }
             ]
