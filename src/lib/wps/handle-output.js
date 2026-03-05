@@ -1,6 +1,6 @@
 /**
  * Processes WPS response data according to output action definitions
- * from navigation.json.
+ * from workflow.json.
  *
  * Supported actions:
  *   - storeValue: saves a value (or sub-path of response) into appStore.wpsResults

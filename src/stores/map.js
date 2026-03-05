@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import layersConfig from '@/data/base-layers-config.json'
+import area from '@turf/area'
+import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
 
 export const useMapStore = defineStore('map', {
@@ -9,6 +10,7 @@ export const useMapStore = defineStore('map', {
     layerVisibility: {},
     layerClickable: {},
     activeRegion: null,
+    activeRegionId: null,
   }),
   
   getters: {
@@ -63,8 +65,18 @@ export const useMapStore = defineStore('map', {
       
       return visible
     },
+
+    suggestedUom: (state) => {
+      const feature = state.activeRegion?.feature
+      if (!feature) return null
+
+      const geomArea = area(feature)
+      if (!Number.isFinite(geomArea)) return null
+
+      return Math.floor(geomArea / 1000)
+    },
   },
-  
+
   actions: {
     initializeMapboxLayers () {
       const configMap = new Map()
@@ -127,16 +139,21 @@ export const useMapStore = defineStore('map', {
       this.layerVisibility[layerId] = isVisible
     },
     
-    setActiveRegion (layerId, feature) {
+    setActiveRegion (layerId, feature, regionIdProperty = null) {
       this.activeRegion = {
         layerId: layerId,
         properties: feature.properties || {},
         feature: feature,
       }
+      this.activeRegionId =
+        regionIdProperty && feature.properties && feature.properties[regionIdProperty] != null
+          ? feature.properties[regionIdProperty]
+          : null
     },
-    
+
     clearActiveRegion () {
       this.activeRegion = null
+      this.activeRegionId = null
     },
 
     addDynamicLayer (layerConfig) {

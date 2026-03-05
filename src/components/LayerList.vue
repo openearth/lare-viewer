@@ -49,9 +49,10 @@
     if (!props.conditionSource) {
       return props.layers
     }
-    const selected = appStore.selections[props.conditionSource]
+    const raw = appStore.selections[props.conditionSource]
+    const selectedId = raw != null && typeof raw === 'object' && 'id' in raw ? raw.id : raw
     return props.layers.filter(
-      layer => !layer.condition || layer.condition === selected,
+      layer => !layer.condition || layer.condition === selectedId,
     )
   })
 

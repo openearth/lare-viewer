@@ -30,13 +30,24 @@
 
   onMounted(() => {
     if (props.selectionKey && appStore.selections[props.selectionKey] != null) {
-      selected.value = appStore.selections[props.selectionKey]
+      const stored = appStore.selections[props.selectionKey]
+      selected.value = typeof stored === 'object' && stored?.id != null ? stored.id : stored
     }
   })
 
   watch(selected, (value) => {
     if (props.selectionKey) {
-      appStore.setSelection(props.selectionKey, value)
+      const option = props.options.find(o => o.id === value)
+      const toStore =
+        option && option.layerName != null
+          ? {
+            id: option.id,
+            layerName: option.layerName,
+            ...(option.regionIdProperty != null && { regionIdProperty: option.regionIdProperty }),
+            ...(option.layerNameForWPS != null && { layerNameForWPS: option.layerNameForWPS }),
+          }
+          : value
+      appStore.setSelection(props.selectionKey, toStore)
     }
     if (value != null) {
       emit('step-complete', { value })

@@ -111,16 +111,16 @@ lare-viewer/
 └── package.json       # Project dependencies and scripts
 ```
 
-## Configuring `navigation.json`
+## Configuring `workflow.json`
 
-The workflow and the processes requests are configurable from the JSON file at `src/config/navigation.json`.
+The workflow and the processes requests are configurable from the JSON file at `src/config/workflow.json`.
 
 ### Overall structure
 
 ```json
 {
   "logo": "/desirmed_logo.png",
-  "menus": [
+  "steps": [
     {
       "id": "regionSelection",
       "title": "Region Selection",
@@ -136,17 +136,17 @@ The workflow and the processes requests are configurable from the JSON file at `
 ```
 
 - **`logo`**: Path (relative to `public/`) to the logo shown at the top of the main navigation drawer.
-- **`menus`**: Ordered list of workflow steps. Each menu item:
+- **`steps`**: Ordered list of workflow steps. Each step:
   - **`id`**: Unique identifier used internally (e.g. for dependencies and WPS results).
   - **`title`**: Label shown in the main navigation drawer.
   - **`drawerTitle`**: Title shown at the top of the step drawer.
   - **`icon`**: Vuetify Material Design Icon name (e.g. `mdi-map-marker-radius`).
-  - **`requiredSteps`** (optional): Array of menu `id`s that must be completed before this step is enabled.
+  - **`requiredSteps`** (optional): Array of step `id`s that must be completed before this step is enabled.
   - **`completionEvent`** (optional): How the step is marked complete. `null` (default) means completion is driven by child components; `"auto"` means the step completes as soon as its drawer opens.
   - **`components`**: List of UI components rendered inside the step drawer.
   - **`wps`** (optional): Configuration for a WPS Execute call associated with this step (see below).
 
-### Components inside a menu
+### Components inside a step
 
 Each entry in `components` has the shape:
 
@@ -260,9 +260,9 @@ You can then make a later step conditionally show layers depending on this value
 
 This pattern lets you implement a “step 0” use case selection (e.g. NUTS vs Hydrobasins) entirely through configuration, without changing application code.
 
-### Wiring menus together with `requiredSteps`
+### Wiring steps together with `requiredSteps`
 
-Menus can depend on the completion of earlier steps. For example:
+Steps can depend on the completion of earlier steps. For example:
 
 ```json
 {
@@ -277,9 +277,9 @@ The `hazard` step becomes clickable only after the `regionSelection` step has be
 
 ### WPS configuration per step
 
-Each menu can optionally define a `wps` object describing a WPS Execute call to run when the step is completed or when the user interacts with the map.
+Each step can optionally define a `wps` object describing a WPS Execute call to run when the step is completed or when the user interacts with the map.
 
-Example from `navigation.json`:
+Example from `workflow.json`:
 
 ```json
 {
