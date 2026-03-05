@@ -50,6 +50,7 @@
   function getCardTitle (propertiesBoxType) {
     const titles = {
       region: 'Selected region',
+      hydrobasin: 'Selected basin',
     }
     return titles[propertiesBoxType] || 'Properties'
   }
@@ -60,6 +61,9 @@
         'Country': properties.cntr_code ?? '—',
         'Region name': properties.nuts_name ?? '—',
         'NUTS ID': properties.nuts_id ?? '—',
+      },
+      hydrobasin: {
+        'Hydro basin ID': properties.hybas_id ?? '—',
       },
     }
     return mappings[propertiesBoxType] || {}
