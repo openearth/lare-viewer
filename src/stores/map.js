@@ -6,6 +6,7 @@ import buildMapboxLayer from '@/lib/build-mapbox-layer'
 export const useMapStore = defineStore('map', {
   state: () => ({
     layersConfig,
+    staticLayerIds: layersConfig.map(cfg => cfg.id),
     mapboxLayers: [],
     layerVisibility: {},
     layerClickable: {},
@@ -167,12 +168,47 @@ export const useMapStore = defineStore('map', {
       if (built) {
         this.mapboxLayers.push(built)
         this.layerVisibility[layerConfig.id] = true
+
+        // Ensure dynamic layers also show up in the legend by
+        // creating a corresponding layersConfig entry when needed.
+        const hasConfig = this.layersConfig.some(cfg => cfg.id === layerConfig.id)
+        if (!hasConfig) {
+          this.layersConfig.push({
+            id: layerConfig.id,
+            url: layerConfig.url,
+            layer: layerConfig.layer,
+            name: layerConfig.name || layerConfig.id,
+            dynamic: true,
+          })
+        }
       }
     },
 
     removeDynamicLayer (layerId) {
       this.mapboxLayers = this.mapboxLayers.filter(l => l.id !== layerId)
       delete this.layerVisibility[layerId]
+
+       // Remove any dynamic-only config entry so legends stay in sync
+      this.layersConfig = this.layersConfig.filter(cfg => !(cfg.id === layerId && cfg.dynamic))
+    },
+
+    /**
+     * Removes all dynamically added layers (those not present in the static layersConfig).
+     */
+    clearDynamicLayers () {
+      const staticIds = new Set(this.staticLayerIds)
+
+      // Remove all non-static layers from the map and visibility state
+      this.mapboxLayers = this.mapboxLayers.filter(layer => {
+        const isStatic = staticIds.has(layer.id)
+        if (!isStatic) {
+          delete this.layerVisibility[layer.id]
+        }
+        return isStatic
+      })
+
+      // Strip any dynamic layer configs so legends update accordingly
+      this.layersConfig = this.layersConfig.filter(cfg => staticIds.has(cfg.id))
     },
   },
 })
