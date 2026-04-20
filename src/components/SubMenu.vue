@@ -29,7 +29,7 @@
           v-bind="comp.props"
           @step-complete="onChildStepComplete"
           @step-ready="onStepReady"
-          @run-wps="onRunWps"
+          @run-process="onRunProcess"
         />
       </div>
 
@@ -46,7 +46,7 @@
           variant="tonal"
           block
           size="small"
-          :disabled="props.requiresConfirmation && !stepReadyPayload"
+          :disabled="confirmButtonDisabled"
           @click="onConfirmClick"
         >
           Confirm
@@ -60,7 +60,7 @@
   import { computed, shallowRef, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
-  import { executeWpsConfig } from '@/lib/wps/execute-config'
+  import { executeProcessConfig } from '@/lib/ogc-process/execute-config'
 
   const props = defineProps({
     menuId: { type: String, required: true },
@@ -70,7 +70,7 @@
     requiresConfirmation: { type: Boolean, default: false },
     confirmationSource: { type: String, default: 'component' },
     explanation: { type: String, default: '' },
-    wps: { type: Object, default: null },
+    process: { type: Object, default: null },
   })
 
   const store = useAppStore()
@@ -105,6 +105,17 @@
     return loadedComponents.value.filter(comp => comp.component)
   })
 
+  /** For process-driven steps, footer Confirm must wait for a successful run (payload includes `result`). */
+  const confirmButtonDisabled = computed(() => {
+    if (!props.requiresConfirmation) return false
+    const p = stepReadyPayload.value
+    if (!p) return true
+    if (props.confirmationSource === 'process' && props.process?.trigger === 'component') {
+      return p.result == null
+    }
+    return false
+  })
+
   const isOpen = computed({
     get: () => store.activeMenu === props.menuId,
     set: (value) => {
@@ -124,12 +135,12 @@
     if (open && props.completionEvent === 'auto' && !store.isStepCompleted(props.menuId)) {
       completeStep()
     }
-    if (open && props.confirmationSource === 'wps' && props.wps?.trigger === 'stepOpen') {
+    if (open && props.confirmationSource === 'process' && props.process?.trigger === 'stepOpen') {
       try {
-        const result = await executeWpsOnly({})
+        const result = await executeProcessOnly({})
         stepReadyPayload.value = result != null ? { result } : {}
       } catch (error) {
-        console.error(`WPS request failed for step "${ props.menuId }" (stepOpen):`, error)
+        console.error(`Process request failed for step "${ props.menuId }" (stepOpen):`, error)
       }
     }
   })
@@ -149,58 +160,35 @@
     store.completeStep(props.menuId)
   }
 
-  // --- WPS execution (driven by wps.trigger) ---
+  // --- Process execution (driven by process.trigger) ---
 
-  const wpsTrigger = props.wps?.trigger
+  const processTrigger = props.process?.trigger
 
-  if (wpsTrigger === 'mapClick') {
+  if (processTrigger === 'mapClick') {
     watch(() => mapStore.activeRegion, (region) => {
       if (region && isOpen.value) {
-        executeWps()
+        executeProcess()
       }
     })
   }
 
-  async function executeWpsOnly (payload = {}) {
-    if (!props.wps) return null
-    const result = await executeWpsConfig(props.wps, {
+  async function executeProcessOnly (payload = {}) {
+    if (!props.process) return null
+    return executeProcessConfig(props.process, {
       payload,
       appStore: store,
       mapStore,
     })
-    addWpsLayers(result)
-    return result
   }
 
-  async function executeWps (payload = {}) {
+  async function executeProcess (payload = {}) {
     try {
-      await executeWpsOnly(payload)
+      await executeProcessOnly(payload)
     } catch (error) {
-      console.error(`WPS request failed for step "${ props.menuId }":`, error)
+      console.error(`Process request failed for step "${ props.menuId }":`, error)
       return
     }
     completeStep()
-  }
-
-  function addWpsLayers (result) {
-    if (!result) return
-
-    const layerData = result.layers ?? result
-    const folders = Array.isArray(layerData) ? layerData : []
-
-    for (const folder of folders) {
-      if (!folder?.contents) continue
-      for (const entry of folder.contents) {
-        if (entry.layer && entry.url) {
-          mapStore.addDynamicLayer({
-            id: entry.layer,
-            name: entry.name || entry.layer,
-            layer: entry.layer,
-            url: entry.url,
-          })
-        }
-      }
-    }
   }
 
   function onChildStepComplete (payload) {
@@ -215,19 +203,19 @@
     stepReadyPayload.value = payload || {}
   }
 
-  async function onRunWps (payload) {
-    if (props.wps?.trigger !== 'component') return
+  async function onRunProcess (payload) {
+    if (props.process?.trigger !== 'component') return
     try {
-      const result = await executeWpsOnly(payload || {})
+      const result = await executeProcessOnly(payload || {})
       stepReadyPayload.value = result != null ? { result } : {}
     } catch (error) {
-      console.error(`WPS request failed for step "${ props.menuId }" (run-wps):`, error)
+      console.error(`Process request failed for step "${ props.menuId }" (run-process):`, error)
     }
   }
 
   async function onStepComplete (payload) {
-    if (wpsTrigger === 'stepComplete') {
-      await executeWps(payload)
+    if (processTrigger === 'stepComplete') {
+      await executeProcess(payload)
     } else {
       completeStep()
     }
@@ -237,7 +225,7 @@
     if (props.requiresConfirmation && !stepReadyPayload.value) return
     const payload = stepReadyPayload.value || {}
     stepReadyPayload.value = null
-    if (props.confirmationSource === 'wps' || props.confirmationSource === 'mapClick') {
+    if (props.confirmationSource === 'process' || props.confirmationSource === 'mapClick') {
       completeStep()
       store.openNextStep(props.menuId)
       return

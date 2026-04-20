@@ -1,8 +1,8 @@
 {
   "logo": "/desirmed_logo.png",
   "initialSetup": {
-    "wps": {
-      "identifier": "lare_start",
+    "process": {
+      "identifier": "lare-start",
       "trigger": "onStart",
       "inputs": [],
       "storeResultAs": "initialSetup"
@@ -27,15 +27,15 @@
                 "id": "administration",
                 "name": "Administration",
                 "layerName": "region:nuts_2021_level_3",
-                "regionIdProperty": "nuts_id",
-                "layerNameForWPS": "region:nuts_2021"
+                "regionIdProperty": "nuts_name",
+                "layerNameForProcess": "region:nuts_2021"
               },
               {
                 "id": "hydrobasin",
                 "name": "Hydro basin",
                 "layerName": "topography:hybas_eu_lev12_v1c",
                 "regionIdProperty": "hybas_id",
-                "layerNameForWPS": "hydro:hybas_eu_lev12_v1c"
+                "layerNameForProcess": "hydro:hybas_eu_lev12_v1c"
               }
             ]
           }
@@ -94,43 +94,65 @@
       "requiredSteps": [
         "regionSelection"
       ],
-      "explanation": "Enter the hexagon size, click the calculator to run the UOM calculation, then confirm to continue.",
+      "explanation": "Choose a landscape archetype and confirm, then enter the hexagon size, click the calculator to run the UOM calculation, then confirm to continue.",
       "requiresConfirmation": true,
-      "confirmationSource": "wps",
-      "wps": {
-        "identifier": "lare_uom",
+      "confirmationSource": "process",
+      "process": {
+        "identifier": "lare-uom",
         "trigger": "component",
         "inputs": [
           {
             "id": "sessionid",
-            "type": "LiteralData",
-            "source": "store:app.wpsResults.initialSetup.sessionid"
+            "source": "store:app.processResults.initialSetup.sessionid"
           },
           {
             "id": "uomsize",
-            "type": "LiteralData",
             "source": "payload:value"
           },
           {
             "id": "layername",
-            "type": "LiteralData",
-            "source": "store:app.selections.userCaseSelection.layerNameForWPS"
+            "source": "store:app.selections.userCaseSelection.layerNameForProcess"
           },
           {
             "id": "id",
-            "type": "LiteralData",
             "source": "store:map.activeRegionId"
+          },
+          {
+            "id": "archetype",
+            "source": "store:app.selections.uomArchetype"
           }
         ],
         "storeResultAs": "uom",
         "outputActions": [
           {
             "action": "addLayer",
-            "path": "layers"
+            "path": "response"
           }
         ]
       },
       "components": [
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "Landscape archetype",
+            "selectionKey": "uomArchetype",
+            "confirmSelection": true,
+            "options": [
+              {
+                "id": "coastal",
+                "name": "Coastal"
+              },
+              {
+                "id": "urban",
+                "name": "Urban"
+              },
+              {
+                "id": "rural",
+                "name": "Rural"
+              }
+            ]
+          }
+        },
         {
           "component": "NumberInput",
           "componentProps": {

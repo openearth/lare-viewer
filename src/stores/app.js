@@ -5,7 +5,7 @@ export const useAppStore = defineStore('app', {
   state: () => ({
     activeMenu: null,
     completedSteps: [],
-    wpsResults: {},
+    processResults: {},
     selections: {},
   }),
 
@@ -39,8 +39,8 @@ export const useAppStore = defineStore('app', {
       }
     },
 
-    setWpsResult (key, result) {
-      this.wpsResults[key] = result
+    setProcessResult (key, result) {
+      this.processResults[key] = result
     },
 
     setSelection (key, value) {
@@ -60,7 +60,7 @@ export const useAppStore = defineStore('app', {
           id => !toRemove.includes(id),
         )
         for (const id of toRemove) {
-          delete this.wpsResults[id]
+          delete this.processResults[id]
         }
       }
     },

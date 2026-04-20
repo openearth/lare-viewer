@@ -113,7 +113,7 @@ lare-viewer/
 
 ## Configuring `workflow.json`
 
-The workflow and the processes requests are configurable from the JSON file at `src/config/workflow.json`.
+The workflow and process requests are configurable from the JSON file at `src/config/workflow.json`.
 
 ### Overall structure
 
@@ -129,7 +129,7 @@ The workflow and the processes requests are configurable from the JSON file at `
       "requiredSteps": [],
       "completionEvent": null,
       "components": [ /* UI configuration */ ],
-      "wps": { /* optional WPS configuration */ }
+      "process": { /* optional process configuration */ }
     }
   ]
 }
@@ -137,14 +137,14 @@ The workflow and the processes requests are configurable from the JSON file at `
 
 - **`logo`**: Path (relative to `public/`) to the logo shown at the top of the main navigation drawer.
 - **`steps`**: Ordered list of workflow steps. Each step:
-  - **`id`**: Unique identifier used internally (e.g. for dependencies and WPS results).
+  - **`id`**: Unique identifier used internally (e.g. for dependencies and process results).
   - **`title`**: Label shown in the main navigation drawer.
   - **`drawerTitle`**: Title shown at the top of the step drawer.
   - **`icon`**: Vuetify Material Design Icon name (e.g. `mdi-map-marker-radius`).
   - **`requiredSteps`** (optional): Array of step `id`s that must be completed before this step is enabled.
   - **`completionEvent`** (optional): How the step is marked complete. `null` (default) means completion is driven by child components; `"auto"` means the step completes as soon as its drawer opens.
   - **`components`**: List of UI components rendered inside the step drawer.
-  - **`wps`** (optional): Configuration for a WPS Execute call associated with this step (see below).
+  - **`process`** (optional): Configuration for an OGC API process execution associated with this step (see below).
 
 ### Components inside a step
 
@@ -185,7 +185,7 @@ Different components expect different props:
   - **`options`**: Array of `{ "id": "value", "name": "Label" }` entries.
   - **`selectionKey`** (optional): Name under which the selected value is stored in the app store (`app.selections[selectionKey]`). If omitted, the value is only passed via the `step-complete` payload.
 - **`NumberInput`**:
-  - Typical props include `label`, `suffix`, `min`, `max`, `step`, `defaultValue`, and `defaultValueSource` (see below under WPS input sources).
+  - Typical props include `label`, `suffix`, `min`, `max`, `step`, `defaultValue`, and `defaultValueSource` (see below under process input sources).
 
 ### Use case selection and `selectionKey`
 
@@ -218,7 +218,7 @@ With this configuration:
 
 - **`SelectionList`**:
   - Stores the chosen option under `app.selections.userCaseSelection` using `selectionKey`.
-  - Emits `step-complete` with a payload `{ "value": "<selected id>" }`, which can be used by WPS inputs via `source: "payload:value"`.
+  - Emits `step-complete` with a payload `{ "value": "<selected id>" }`, which can be used by process inputs via `source: "payload:value"`.
 
 You can then make a later step conditionally show layers depending on this value by combining `conditionSource` and per-layer `condition` values:
 
@@ -275,9 +275,9 @@ Steps can depend on the completion of earlier steps. For example:
 
 The `hazard` step becomes clickable only after the `regionSelection` step has been completed.
 
-### WPS configuration per step
+### Process configuration per step
 
-Each step can optionally define a `wps` object describing a WPS Execute call to run when the step is completed or when the user interacts with the map.
+Each step can optionally define a `process` object describing an OGC API process execution to run when the step is completed or when the user interacts with the map.
 
 Example from `workflow.json`:
 
@@ -309,12 +309,12 @@ Example from `workflow.json`:
       }
     }
   ],
-  "wps": {
-    "identifier": "lare_region",
+  "process": {
+    "identifier": "lare-hazard",
     "trigger": "mapClick",
     "inputs": [
       {
-        "id": "nutsname",
+        "id": "name",
         "type": "LiteralData",
         "source": "store:map.activeRegion.properties.nuts_name"
       }
@@ -324,54 +324,94 @@ Example from `workflow.json`:
 }
 ```
 
-The WPS configuration supports the following fields:
+The process configuration supports the following fields:
 
-- **`identifier`**: The WPS process identifier as exposed by the backend (e.g. `"lare_region"`, `"lare_hazard"`, `"lare_uom"`). This value is passed directly to the WPS `Execute` request.
-- **`trigger`**: When to execute the WPS call for this step:
+- **`identifier`**: The pygeoapi process identifier as exposed by the backend (e.g. `"lare-start"`, `"lare-hazard"`, `"lare-uom"`). This value is used to call `/processes/{identifier}/execution?f=json`.
+- **`trigger`**: When to execute the process call for this step:
+  - `"onStart"`: Execute during app startup (used by `initialSetup.process`).
+  - `"stepOpen"`: Execute when the step drawer is opened.
+  - `"component"`: Execute when a child component emits `run-process` (e.g. calculator button in `NumberInput`).
   - `"mapClick"`: Execute whenever the user selects a region on the map (using `mapStore.activeRegion`) while this step is open.
   - `"stepComplete"`: Execute when the step signals completion (for example when the user picks an option or enters a number and the component emits a `step-complete` event).
-- **`inputs`**: Array of WPS input definitions:
-  - `id`: Input identifier expected by the WPS process.
-  - `type`: WPS data type, typically `"LiteralData"` (default) or `"ComplexData"`.
+- **`inputs`**: Array of process input definitions:
+  - `id`: Input identifier expected by the backend process.
   - `source`: Where the value comes from, using the pattern `<sourceType>:<path>`.
-- **`storeResultAs`** (optional): Key under which the full WPS response is stored in the app store (`app.wpsResults[storeResultAs]`).
+- **`storeResultAs`** (optional): Key under which the full process response is stored in the app store (`app.processResults[storeResultAs]`).
 - **`outputActions`** (optional): Array of post-processing instructions for the response (see below).
 
-The WPS calls are sent to the base URL configured via the environment variable:
+### Template for a new process step
 
-```env
-VITE_WPS_BASE_URL=https://your-wps-endpoint.example.com/wps
+Use this as a copy/paste starting point when adding a new step that calls an OGC API process:
+
+```json
+{
+  "id": "myStep",
+  "title": "My Step",
+  "drawerTitle": "Run process",
+  "requiredSteps": ["regionSelection"],
+  "requiresConfirmation": true,
+  "confirmationSource": "process",
+  "process": {
+    "identifier": "lare-my-process",
+    "trigger": "component",
+    "inputs": [
+      { "id": "sessionid", "source": "store:app.processResults.initialSetup.sessionid" },
+      { "id": "regionId", "source": "store:map.activeRegionId" },
+      { "id": "valueFromUi", "source": "payload:value" },
+      { "id": "constant", "source": "static:my-value" }
+    ],
+    "storeResultAs": "myStepResult",
+    "outputActions": [
+      { "action": "addLayer", "path": "response" }
+    ]
+  },
+  "components": [
+    {
+      "component": "NumberInput",
+      "componentProps": {
+        "label": "Input value",
+        "showCalcButton": true
+      }
+    }
+  ]
+}
 ```
 
-### WPS input `source` syntax
+The process execution requests are sent to the API root URL configured via the environment variable:
 
-The `source` field describes where to read the value for a given WPS input. Supported forms:
+```env
+VITE_OGC_API_URL=http://localhost:5000
+```
+
+### Process input `source` syntax
+
+The `source` field describes where to read the value for a given process input. Supported forms:
 
 - **`store:<storeName>.<path>`**:
   - Reads from a Pinia store by name, e.g. `"store:map.activeRegion.properties.nuts_name"`.
-  - `storeName` is the key used in the WPS context (`app` or `map`).
+  - `storeName` is the key used in the process context (`app` or `map`).
 - **`payload:<path>`**:
   - Reads from the payload passed by the component that completes the step.
   - Example: in the `hazard` step:
     ```json
-    { "id": "hazard", "type": "LiteralData", "source": "payload:value" }
+    { "id": "hazard", "source": "payload:value" }
     ```
-- **`wpsResult:<path>`**:
-  - Reads from previously stored WPS results (`app.wpsResults`), allowing chaining between steps.
+- **`processResult:<path>`**:
+  - Reads from previously stored process results (`app.processResults`), allowing chaining between steps.
   - Example: in the `uom` step:
     ```json
-    "defaultValueSource": "wpsResult:regionSelection.suggested_uom"
+    "defaultValueSource": "processResult:regionSelection.suggested_uom"
     ```
 - **`static:<value>`**:
   - Use a literal constant value.
 
-### Storing and reusing WPS results
+### Storing and reusing process results
 
-When `storeResultAs` is set, the full parsed WPS response is stored under:
+When `storeResultAs` is set, the full parsed process response is stored under:
 
-- `app.wpsResults[storeResultAs]`
+- `app.processResults[storeResultAs]`
 
-You can then reference this data in later steps via `source: "wpsResult:..."` or via component props like `defaultValueSource` (for `NumberInput`).
+You can then reference this data in later steps via `source: "processResult:..."` or via component props like `defaultValueSource` (for `NumberInput`).
 
 Example:
 
@@ -380,12 +420,14 @@ Example:
   "id": "uom",
   "title": "Calculate UOM",
   "requiredSteps": ["hazard"],
-  "wps": {
-    "identifier": "lare_uom",
+  "process": {
+    "identifier": "lare-uom",
     "trigger": "stepComplete",
     "inputs": [
-      { "id": "nutsname", "type": "LiteralData", "source": "store:map.activeRegion.properties.nuts_name" },
-      { "id": "uomsize", "type": "LiteralData", "source": "payload:value" }
+      { "id": "sessionid", "source": "store:app.processResults.initialSetup.sessionid" },
+      { "id": "uomsize", "source": "payload:value" },
+      { "id": "layername", "source": "store:app.selections.userCaseSelection.layerNameForProcess" },
+      { "id": "id", "source": "store:map.activeRegionId" }
     ],
     "storeResultAs": "uom"
   },
@@ -399,7 +441,7 @@ Example:
         "max": 50000000,
         "step": 100000,
         "defaultValue": 1000,
-        "defaultValueSource": "wpsResult:regionSelection.suggested_uom"
+        "defaultValueSource": "processResult:regionSelection.suggested_uom"
       }
     }
   ]
@@ -408,18 +450,18 @@ Example:
 
 ### Post-processing with `outputActions`
 
-For more advanced cases, you can define `outputActions` inside the `wps` block to automatically store parts of the response or to add dynamic layers to the map.
+For more advanced cases, you can define `outputActions` inside the `process` block to automatically store parts of the response or to add dynamic layers to the map.
 
 Supported actions:
 
-- **`storeValue`**: Store a (sub-)value into `app.wpsResults` under a nested key.
+- **`storeValue`**: Store a (sub-)value into `app.processResults` under a nested key.
 - **`addLayer`**: Add one or more dynamic layers to the map (via `mapStore.addDynamicLayer`).
 
 Example:
 
 ```json
 {
-  "wps": {
+  "process": {
     "identifier": "lare_example",
     "trigger": "stepComplete",
     "inputs": [ /* ... */ ],
@@ -431,7 +473,7 @@ Example:
       },
       {
         "action": "addLayer",
-        "path": "response.layers"
+        "path": "response"
       }
     ]
   }
@@ -439,11 +481,11 @@ Example:
 ```
 
 - **`path`**:
-  - Dot-notated path into the WPS response object.
+  - Dot-notated path into the process response object.
   - If omitted or set to `"response"`, the entire response is used.
   - If it starts with `"response."`, that prefix is ignored (so `"response.layers"` and `"layers"` are equivalent).
 - **`storeAs`** (for `storeValue`):
-  - Dot-notated path where the value will be stored under `app.wpsResults`, e.g. `"example.statistics"`.
+  - Dot-notated path where the value will be stored under `app.processResults`, e.g. `"example.statistics"`.
 - **`layerConfig`** (optional, for `addLayer`):
   - Extra fields merged into each dynamic layer configuration (e.g. default opacity, visibility flags).
 
@@ -455,7 +497,7 @@ The structure expected by `addLayer` is:
   - `url`: WMS/WFS/WMS-T endpoint for the layer.
   - `name` (optional): Human-readable name.
 
-This matches the output format produced by the backend WPS processes and is what the viewer uses to add layers dynamically.
+This matches the output format produced by the backend processes and is what the viewer uses to add layers dynamically.
 
 
 ## License

@@ -3,6 +3,29 @@ import area from '@turf/area'
 import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
 
+function normalizeLayerUrlForBrowser (rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    return rawUrl
+  }
+
+  // Backend may return host.docker.internal URLs valid from containers but
+  // unreachable from the browser on Windows; remap to localhost by default.
+  const publicGeoserverBase = import.meta.env.VITE_GEOSERVER_PUBLIC_BASE_URL
+  if (publicGeoserverBase) {
+    try {
+      const sourceUrl = new URL(rawUrl)
+      const targetBaseUrl = new URL(publicGeoserverBase)
+      sourceUrl.protocol = targetBaseUrl.protocol
+      sourceUrl.host = targetBaseUrl.host
+      return sourceUrl.toString()
+    } catch {
+      return rawUrl
+    }
+  }
+
+  return rawUrl.replace('://host.docker.internal:', '://localhost:')
+}
+
 export const useMapStore = defineStore('map', {
   state: () => ({
     layersConfig,
@@ -160,8 +183,10 @@ export const useMapStore = defineStore('map', {
       const existing = this.mapboxLayers.find(l => l.id === layerConfig.id)
       if (existing) return
 
+      const normalizedUrl = normalizeLayerUrlForBrowser(layerConfig.url)
       const built = buildMapboxLayer({
         ...layerConfig,
+        url: normalizedUrl,
         format: 'image/png',
       })
       if (built) {

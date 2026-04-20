@@ -1,19 +1,19 @@
 /**
- * Processes WPS response data according to output action definitions
+ * Processes response data according to output action definitions
  * from workflow.json.
  *
  * Supported actions:
- *   - storeValue: saves a value (or sub-path of response) into appStore.wpsResults
+ *   - storeValue: saves a value (or sub-path of response) into appStore.processResults
  *   - addLayer:   adds a dynamic layer to the map via mapStore
  *
  * @param {Array<OutputAction>} actions - Output action definitions from config
- * @param {Object} response - The parsed WPS response
+ * @param {Object} response - The parsed process response
  * @param {Object} stores - { app: appStore, map: mapStore }
  *
  * @typedef {Object} OutputAction
  * @property {'storeValue'|'addLayer'} action
  * @property {string} [path]        - Dot-notated path into the response (omit or "response" for full response)
- * @property {string} [storeAs]     - For storeValue: key under wpsResults to store into
+ * @property {string} [storeAs]     - For storeValue: key under processResults to store into
  * @property {Object} [layerConfig] - For addLayer: layer configuration
  */
 export function handleOutputActions (actions, response, stores) {
@@ -25,7 +25,7 @@ export function handleOutputActions (actions, response, stores) {
     switch (action.action) {
       case 'storeValue':
         if (action.storeAs && stores.app) {
-          setNestedValue(stores.app.wpsResults, action.storeAs, value)
+          setNestedValue(stores.app.processResults, action.storeAs, value)
         }
         break
 

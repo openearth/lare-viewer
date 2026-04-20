@@ -33,7 +33,7 @@
   import { ref, watch, computed } from 'vue'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
-  import { resolveInputValue } from '@/lib/wps/resolve-input'
+  import { resolveInputValue } from '@/lib/ogc-process/resolve-input'
 
   const appStore = useAppStore()
   const mapStore = useMapStore()
@@ -50,7 +50,7 @@
     calcButtonTitle: { type: String, default: 'Calculate' },
   })
 
-  const emit = defineEmits(['step-ready', 'run-wps'])
+  const emit = defineEmits(['step-ready', 'run-process'])
 
   const resolvedDefault = computed(() => {
     if (!props.defaultValueSource) return props.defaultValue
@@ -77,7 +77,7 @@
 
   function onCalcClick () {
     if (props.showCalcButton && value.value != null && value.value >= props.min && value.value <= props.max) {
-      emit('run-wps', { value: value.value })
+      emit('run-process', { value: value.value })
     }
   }
 </script>

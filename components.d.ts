@@ -15,7 +15,6 @@ declare module 'vue' {
     AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
     LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
     LayerList: typeof import('./src/components/LayerList.vue')['default']
-    MapboxHighlight: typeof import('./src/components/MapboxHighlight.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
     MapLayer: typeof import('./src/components/MapLayer.vue')['default']
     MapZoomControl: typeof import('./src/components/MapZoomControl.vue')['default']

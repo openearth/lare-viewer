@@ -30,7 +30,7 @@
     :requires-confirmation="step.requiresConfirmation || false"
     :confirmation-source="step.confirmationSource || 'component'"
     :explanation="step.explanation || ''"
-    :wps="step.wps || null"
+    :process="step.process || null"
   />
 </template>
 

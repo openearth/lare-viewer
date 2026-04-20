@@ -15,22 +15,22 @@
   import workflowConfig from '@/config/workflow.json'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
-  import { executeWpsConfig } from '@/lib/wps/execute-config'
+  import { executeProcessConfig } from '@/lib/ogc-process/execute-config'
 
   const appStore = useAppStore()
   const mapStore = useMapStore()
 
   onMounted(async () => {
-    const wps = workflowConfig.initialSetup?.wps
-    if (wps?.trigger === 'onStart') {
+    const process = workflowConfig.initialSetup?.process
+    if (process?.trigger === 'onStart') {
       try {
-        await executeWpsConfig(wps, {
+        await executeProcessConfig(process, {
           payload: {},
           appStore,
           mapStore,
         })
       } catch (error) {
-        console.error('Initial setup WPS request failed:', error)
+        console.error('Initial setup process request failed:', error)
       }
     }
 
