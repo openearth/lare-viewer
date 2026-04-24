@@ -47,12 +47,8 @@
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
-      "requiredSteps": [
-        "userCaseSelection"
-      ],
       "explanation": "Select a region on the map by clicking it, then confirm to continue.",
-      "requiresConfirmation": true,
-      "confirmationSource": "mapClick",
+      "requiresConfirmation": false,
       "components": [
         {
           "component": "LayerList",
@@ -164,6 +160,135 @@
             "defaultValue": 1000,
             "defaultValueSource": "store:map.suggestedUom",
             "showCalcButton": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "archetypeSelection",
+      "title": "Archetype Selection",
+      "drawerTitle": "Select the archetype",
+      "requiredSteps": [
+        "uom"
+      ],
+      "explanation": "Select the archetype and confirm to continue.",
+      "requiresConfirmation": true,
+      "confirmationSource": "component",
+      "wps": {
+        "identifier": "lare_coastal",
+        "trigger": "stepComplete",
+        "inputs": [
+          {
+            "id": "sessionid",
+            "type": "LiteralData",
+            "source": "store:app.wpsResults.initialSetup.sessionid"
+          }
+        ],
+        "storeResultAs": "coastalUseCase",
+        "outputActions": [
+          {
+            "action": "removeLayer",
+            "fromResultKey": "uom",
+            "path": "layers"
+          },
+          {
+            "action": "addLayer",
+            "path": "layers"
+          }
+        ]
+      },
+      "components": [
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "Archetypes",
+            "selectionKey": "archetypeSelection",
+            "options": [
+              {
+                "id": "coastal",
+                "name": "Urban Coastal"
+              },
+              {
+                "id": "agricultural_land",
+                "name": "Agricultural Land"
+              },
+              {
+                "id": "rural_settlements",
+                "name": "Rural Settlements"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "kcsSelection",
+      "title": "KCS & Hazards",
+      "drawerTitle": "Select KCS and hazard",
+      "requiredSteps": [
+        "archetypeSelection"
+      ],
+      "explanation": "Select KCS and hazard type, then confirm to run the UOM KCS calculation.",
+      "requiresConfirmation": true,
+      "confirmationSource": "component",
+      "wps": {
+        "identifier": "lare_kcs",
+        "trigger": "stepComplete",
+        "inputs": [
+          {
+            "id": "archetype",
+            "type": "LiteralData",
+            "source": "store:app.selections.archetypeSelection"
+          },
+          {
+            "id": "kcs",
+            "type": "LiteralData",
+            "source": "store:app.selections.kcsSelection"
+          },
+          {
+            "id": "sessionid",
+            "type": "LiteralData",
+            "source": "store:app.wpsResults.initialSetup.sessionid"
+          },
+          {
+            "id": "hazard",
+            "type": "LiteralData",
+            "source": "store:app.selections.hazardSelection"
+          }
+        ],
+        "storeResultAs": "uomKcs",
+        "outputActions": [
+          {
+            "action": "addLayer",
+            "path": "layers"
+          }
+        ]
+      },
+      "components": [
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "KCS",
+            "selectionKey": "kcsSelection",
+            "options": [
+              {
+                "id": "transport",
+                "name": "Transport"
+              }
+            ]
+          }
+        },
+        {
+          "component": "SelectionList",
+          "componentProps": {
+            "label": "Hazards",
+            "selectionKey": "hazardSelection",
+            "options": [
+              {
+                "id": "pluvial_RP200",
+                "name": "Pluvial floods"
+              }
+            ]
           }
         }
       ]
