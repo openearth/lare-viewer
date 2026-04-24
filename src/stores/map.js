@@ -188,7 +188,7 @@ export const useMapStore = defineStore('map', {
       this.mapboxLayers = this.mapboxLayers.filter(l => l.id !== layerId)
       delete this.layerVisibility[layerId]
 
-       // Remove any dynamic-only config entry so legends stay in sync
+      // Remove any dynamic-only config entry so legends stay in sync
       this.layersConfig = this.layersConfig.filter(cfg => !(cfg.id === layerId && cfg.dynamic))
     },
 
