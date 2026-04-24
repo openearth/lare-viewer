@@ -47,12 +47,8 @@
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "icon": "mdi-map-marker-radius",
-      "requiredSteps": [
-        "userCaseSelection"
-      ],
       "explanation": "Select a region on the map by clicking it, then confirm to continue.",
-      "requiresConfirmation": true,
-      "confirmationSource": "mapClick",
+      "requiresConfirmation": false,
       "components": [
         {
           "component": "LayerList",
