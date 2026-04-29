@@ -165,68 +165,11 @@
       ]
     },
     {
-      "id": "archetypeSelection",
-      "title": "Archetype Selection",
-      "drawerTitle": "Select the archetype",
-      "requiredSteps": [
-        "uom"
-      ],
-      "explanation": "Select the archetype and confirm to continue.",
-      "requiresConfirmation": true,
-      "confirmationSource": "component",
-      "wps": {
-        "identifier": "lare_coastal",
-        "trigger": "stepComplete",
-        "inputs": [
-          {
-            "id": "sessionid",
-            "type": "LiteralData",
-            "source": "store:app.wpsResults.initialSetup.sessionid"
-          }
-        ],
-        "storeResultAs": "coastalUseCase",
-        "outputActions": [
-          {
-            "action": "removeLayer",
-            "fromResultKey": "uom",
-            "path": "layers"
-          },
-          {
-            "action": "addLayer",
-            "path": "layers"
-          }
-        ]
-      },
-      "components": [
-        {
-          "component": "SelectionList",
-          "componentProps": {
-            "label": "Archetypes",
-            "selectionKey": "archetypeSelection",
-            "options": [
-              {
-                "id": "coastal",
-                "name": "Urban Coastal"
-              },
-              {
-                "id": "agricultural_land",
-                "name": "Agricultural Land"
-              },
-              {
-                "id": "rural_settlements",
-                "name": "Rural Settlements"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "id": "kcsSelection",
       "title": "KCS & Hazards",
       "drawerTitle": "Select KCS and hazard",
       "requiredSteps": [
-        "archetypeSelection"
+        "uom"
       ],
       "explanation": "Select KCS and hazard type, then confirm to run the UOM KCS calculation.",
       "requiresConfirmation": true,
@@ -268,12 +211,29 @@
         {
           "component": "SelectionList",
           "componentProps": {
-            "label": "KCS",
-            "selectionKey": "kcsSelection",
+            "label": "Hazards",
+            "selectionKey": "hazardSelection",
+            "conditionSource": "uomArchetype",
             "options": [
               {
-                "id": "transport",
-                "name": "Transport"
+                "id": "salinization",
+                "name": "Salinization",
+                "condition": "coastal"
+              },
+              {
+                "id": "flood",
+                "name": "Flood",
+                "condition": "coastal"
+              },
+              {
+                "id": "heat",
+                "name": "Heat",
+                "condition": "urban"
+              },
+              {
+                "id": "drought",
+                "name": "Drought",
+                "condition": "rural"
               }
             ]
           }
@@ -281,12 +241,29 @@
         {
           "component": "SelectionList",
           "componentProps": {
-            "label": "Hazards",
-            "selectionKey": "hazardSelection",
+            "label": "KCS",
+            "selectionKey": "kcsSelection",
+            "conditionSource": "hazardSelection",
             "options": [
               {
-                "id": "pluvial_RP200",
-                "name": "Pluvial floods"
+                "id": "agriculture",
+                "name": "Agriculture",
+                "condition": "salinization"
+              },
+              {
+                "id": "transport",
+                "name": "Transport",
+                "condition": "flood"
+              },
+              {
+                "id": "agriculture",
+                "name": "Agriculture",
+                "condition": "drought"
+              },
+              {
+                "id": "vulnerable_population_hospitals",
+                "name": "Vulnerable population (Hospitals)",
+                "condition": "salinization"
               }
             ]
           }
