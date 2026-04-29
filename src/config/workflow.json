@@ -98,15 +98,15 @@
         "trigger": "component",
         "inputs": [
           {
-            "id": "sessionid",
-            "source": "store:app.processResults.initialSetup.sessionid"
+            "id": "session_id",
+            "source": "store:app.processResults.initialSetup.session_id"
           },
           {
-            "id": "uomsize",
+            "id": "uom_size",
             "source": "payload:value"
           },
           {
-            "id": "layername",
+            "id": "layer_name",
             "source": "store:app.selections.userCaseSelection.layerNameForProcess"
           },
           {
