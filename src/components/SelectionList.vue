@@ -2,7 +2,7 @@
   <div class="selection-list pa-4">
     <v-select
       v-model="model"
-      :items="options"
+      :items="filteredOptions"
       :label="label"
       item-title="name"
       item-value="id"
@@ -34,6 +34,7 @@
     label: { type: String, required: true },
     options: { type: Array, required: true },
     selectionKey: { type: String, default: null },
+    conditionSource: { type: String, default: null },
     /** When true, store + step-complete only after the confirm button (dropdown is pending until then). */
     confirmSelection: { type: Boolean, default: false },
     confirmLabel: { type: String, default: 'Confirm' },
@@ -53,6 +54,15 @@
         committed.value = v
       }
     },
+  })
+
+  const filteredOptions = computed(() => {
+    if (!props.conditionSource) {
+      return props.options
+    }
+    const raw = appStore.selections[props.conditionSource]
+    const selectedId = raw != null && typeof raw === 'object' && 'id' in raw ? raw.id : raw
+    return props.options.filter(option => !option.condition || option.condition === selectedId)
   })
 
   function selectionToStore (value) {
@@ -94,4 +104,18 @@
       emit('step-complete', { value })
     }
   })
+
+  // Keep state consistent when a dependency changes and current value becomes invalid.
+  watch(filteredOptions, (nextOptions) => {
+    const allowedIds = new Set(nextOptions.map(o => o.id))
+    if (committed.value != null && !allowedIds.has(committed.value)) {
+      committed.value = null
+      if (props.selectionKey) {
+        appStore.setSelection(props.selectionKey, null)
+      }
+    }
+    if (props.confirmSelection && pending.value != null && !allowedIds.has(pending.value)) {
+      pending.value = null
+    }
+  }, { immediate: true })
 </script>
