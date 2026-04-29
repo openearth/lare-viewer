@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-  import { computed, shallowRef, watch } from 'vue'
+  import { computed, provide, shallowRef, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import { executeProcessConfig } from '@/lib/ogc-process/execute-config'
@@ -77,6 +77,7 @@
   const mapStore = useMapStore()
   const loadedComponents = shallowRef([])
   const stepReadyPayload = shallowRef(null)
+  provide('stepId', props.menuId)
 
   const modules = import.meta.glob('@/components/*.vue')
 

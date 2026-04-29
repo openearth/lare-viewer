@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import area from '@turf/area'
 import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
+import { useAppStore } from '@/stores/app'
 
 function normalizeLayerUrlForBrowser (rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string') {
@@ -32,7 +33,7 @@ export const useMapStore = defineStore('map', {
     staticLayerIds: layersConfig.map(cfg => cfg.id),
     mapboxLayers: [],
     layerVisibility: {},
-    layerClickable: {},
+    layerClickableByStep: {},
     activeRegion: null,
     activeRegionId: null,
   }),
@@ -55,7 +56,10 @@ export const useMapStore = defineStore('map', {
     },
     
     isLayerClickable: (state) => (layerId) => {
-      return state.layerClickable[layerId] ?? false
+      const appStore = useAppStore()
+      const activeStepId = appStore.activeMenu
+      if (!activeStepId) return false
+      return state.layerClickableByStep[activeStepId]?.[layerId] ?? false
     },
     
     visibleLayersWithConfig: (state) => {
@@ -151,12 +155,18 @@ export const useMapStore = defineStore('map', {
       }
     },
     
-    initializeLayerClickable (layers) {
+    registerStepClickability (stepId, layers) {
+      if (!stepId || !Array.isArray(layers)) return
+      const clickability = {}
       for (const layer of layers) {
-        if (this.layerClickable[layer.id] === undefined) {
-          this.layerClickable[layer.id] = layer.clickable ?? false
-        }
+        clickability[layer.id] = layer.clickable ?? false
       }
+      this.layerClickableByStep[stepId] = clickability
+    },
+
+    unregisterStepClickability (stepId) {
+      if (!stepId) return
+      delete this.layerClickableByStep[stepId]
     },
     
     setLayerVisibility (layerId, isVisible) {

@@ -46,9 +46,13 @@
       "id": "regionSelection",
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
+      "requiredSteps": [
+        "userCaseSelection"
+      ],
       "icon": "mdi-map-marker-radius",
       "explanation": "Select a region on the map by clicking it, then confirm to continue.",
-      "requiresConfirmation": false,
+      "requiresConfirmation": true,
+      "confirmationSource": "mapClick",
       "components": [
         {
           "component": "LayerList",
@@ -132,7 +136,6 @@
           "componentProps": {
             "label": "Landscape archetype",
             "selectionKey": "uomArchetype",
-            "confirmSelection": true,
             "options": [
               {
                 "id": "coastal",
@@ -159,6 +162,8 @@
             "step": 100000,
             "defaultValue": 1000,
             "defaultValueSource": "store:map.suggestedUom",
+            "requiresCalcCondition": true,
+            "calcConditionSource": "store:app.selections.uomArchetype",
             "showCalcButton": true
           }
         }
@@ -189,9 +194,9 @@
             "source": "store:app.selections.kcsSelection"
           },
           {
-            "id": "sessionid",
+            "id": "session_id",
             "type": "LiteralData",
-            "source": "store:app.wpsResults.initialSetup.sessionid"
+            "source": "store:app.wpsResults.initialSetup.session_id"
           },
           {
             "id": "hazard",
@@ -263,7 +268,7 @@
               {
                 "id": "vulnerable_population_hospitals",
                 "name": "Vulnerable population (Hospitals)",
-                "condition": "salinization"
+                "condition": "heat"
               }
             ]
           }

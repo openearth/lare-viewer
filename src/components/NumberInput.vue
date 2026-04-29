@@ -21,7 +21,7 @@
         variant="tonal"
         color="primary"
         size="small"
-        :disabled="value == null || value < min || value > max"
+        :disabled="isCalcDisabled"
         :title="calcButtonTitle"
         @click="onCalcClick"
       />
@@ -47,6 +47,8 @@
     defaultValue: { type: Number, default: 0 },
     defaultValueSource: { type: String, default: null },
     showCalcButton: { type: Boolean, default: false },
+    requiresCalcCondition: { type: Boolean, default: false },
+    calcConditionSource: { type: String, default: null },
     calcButtonTitle: { type: String, default: 'Calculate' },
   })
 
@@ -63,6 +65,21 @@
 
   const value = ref(resolvedDefault.value)
 
+  const calcConditionMet = computed(() => {
+    if (!props.requiresCalcCondition) return true
+    if (!props.calcConditionSource) return false
+    const resolved = resolveInputValue(props.calcConditionSource, {
+      payload: { value: value.value },
+      stores: { app: appStore, map: mapStore },
+    })
+    return resolved !== undefined && resolved !== null && resolved !== ''
+  })
+
+  const isCalcDisabled = computed(() => {
+    const invalidValue = value.value == null || value.value < props.min || value.value > props.max
+    return invalidValue || !calcConditionMet.value
+  })
+
   watch(resolvedDefault, (newVal) => {
     if (newVal != null) {
       value.value = newVal
@@ -76,7 +93,7 @@
   }, { immediate: true })
 
   function onCalcClick () {
-    if (props.showCalcButton && value.value != null && value.value >= props.min && value.value <= props.max) {
+    if (props.showCalcButton && !isCalcDisabled.value) {
       emit('run-process', { value: value.value })
     }
   }
