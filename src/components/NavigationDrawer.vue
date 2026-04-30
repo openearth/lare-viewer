@@ -52,6 +52,9 @@
     :requires-confirmation="step.requiresConfirmation || false"
     :confirmation-source="step.confirmationSource || 'component'"
     :explanation="step.explanation || ''"
+    :explanation-flash-when-available="step.explanationFlashWhenAvailable || false"
+    :confirm-flash-when-enabled="step.confirmFlashWhenEnabled || false"
+    :required-selections="step.requiredSelections || []"
     :process="step.process || null"
   />
 </template>

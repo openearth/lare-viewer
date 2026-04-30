@@ -14,17 +14,22 @@
         hide-details
         class="number-input__field"
       />
-      <v-btn
+      <flash-highlight
         v-if="showCalcButton"
-        class="number-input__calc-btn"
-        icon="mdi-calculator"
-        variant="tonal"
-        color="primary"
-        size="small"
-        :disabled="isCalcDisabled"
-        :title="calcButtonTitle"
-        @click="onCalcClick"
-      />
+        :enabled="needsCalcInteraction"
+        :flash-when-enabled="flashWhenEnabled"
+      >
+        <v-btn
+          class="number-input__calc-btn"
+          icon="mdi-calculator"
+          variant="tonal"
+          color="primary"
+          size="small"
+          :disabled="isCalcDisabled"
+          :title="calcButtonTitle"
+          @click="onCalcClick"
+        />
+      </flash-highlight>
     </div>
   </div>
 </template>
@@ -34,6 +39,7 @@
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import { resolveInputValue } from '@/lib/ogc-process/resolve-input'
+  import FlashHighlight from '@/components/FlashHighlight.vue'
 
   const appStore = useAppStore()
   const mapStore = useMapStore()
@@ -50,6 +56,7 @@
     requiresCalcCondition: { type: Boolean, default: false },
     calcConditionSource: { type: String, default: null },
     calcButtonTitle: { type: String, default: 'Calculate' },
+    flashWhenEnabled: { type: Boolean, default: false },
   })
 
   const emit = defineEmits(['step-ready', 'run-process'])
@@ -64,6 +71,7 @@
   })
 
   const value = ref(resolvedDefault.value)
+  const lastRunValue = ref(null)
 
   const calcConditionMet = computed(() => {
     if (!props.requiresCalcCondition) return true
@@ -80,6 +88,11 @@
     return invalidValue || !calcConditionMet.value
   })
 
+  const needsCalcInteraction = computed(() => {
+    if (!props.showCalcButton || isCalcDisabled.value) return false
+    return lastRunValue.value !== value.value
+  })
+
   watch(resolvedDefault, (newVal) => {
     if (newVal != null) {
       value.value = newVal
@@ -94,6 +107,7 @@
 
   function onCalcClick () {
     if (props.showCalcButton && !isCalcDisabled.value) {
+      lastRunValue.value = value.value
       emit('run-process', { value: value.value })
     }
   }

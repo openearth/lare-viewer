@@ -25,6 +25,7 @@
         v-if="layer.propertiesBox"
         :layer-id="layer.id"
         :properties-box-type="layer.propertiesBox"
+        :flash-when-enabled="layer.flashWhenEnabled ?? false"
         class="mt-0"
       />
     </template>

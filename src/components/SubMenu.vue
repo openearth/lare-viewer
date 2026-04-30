@@ -34,23 +34,31 @@
       </div>
 
       <div class="sub-menu-drawer__footer">
-        <p
+        <flash-highlight
           v-if="props.explanation"
-          class="sub-menu-drawer__explanation text-body-2 text-medium-emphasis"
+          :enabled="isOpen && shouldPromptExplanation"
+          :flash-when-enabled="props.explanationFlashWhenAvailable"
         >
-          {{ props.explanation }}
-        </p>
-        <v-btn
-          class="sub-menu-drawer__confirm"
-          color="primary"
-          variant="tonal"
-          block
-          size="small"
-          :disabled="confirmButtonDisabled"
-          @click="onConfirmClick"
+          <p class="sub-menu-drawer__explanation text-body-2 text-medium-emphasis">
+            {{ props.explanation }}
+          </p>
+        </flash-highlight>
+        <flash-highlight
+          :enabled="isOpen && !confirmButtonDisabled"
+          :flash-when-enabled="props.confirmFlashWhenEnabled"
         >
-          Confirm
-        </v-btn>
+          <v-btn
+            class="sub-menu-drawer__confirm"
+            color="primary"
+            variant="tonal"
+            block
+            size="small"
+            :disabled="confirmButtonDisabled"
+            @click="onConfirmClick"
+          >
+            Confirm
+          </v-btn>
+        </flash-highlight>
       </div>
     </div>
   </v-navigation-drawer>
@@ -61,6 +69,7 @@
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import { executeProcessConfig } from '@/lib/ogc-process/execute-config'
+  import FlashHighlight from '@/components/FlashHighlight.vue'
 
   const props = defineProps({
     menuId: { type: String, required: true },
@@ -70,6 +79,10 @@
     requiresConfirmation: { type: Boolean, default: false },
     confirmationSource: { type: String, default: 'component' },
     explanation: { type: String, default: '' },
+    explanationFlashWhenAvailable: { type: Boolean, default: false },
+    confirmFlashWhenEnabled: { type: Boolean, default: false },
+    /** When set, footer Confirm stays disabled until each key has a value in appStore.selections. */
+    requiredSelections: { type: Array, default: () => [] },
     process: { type: Object, default: null },
   })
 
@@ -106,15 +119,39 @@
     return loadedComponents.value.filter(comp => comp.component)
   })
 
+  function isSelectionMissing (value) {
+    if (value == null) return true
+    if (typeof value === 'string') return value === ''
+    if (typeof value === 'object' && value !== null && 'id' in value) {
+      return value.id == null || value.id === ''
+    }
+    return false
+  }
+
+  const requiredSelectionsSatisfied = computed(() => {
+    const keys = props.requiredSelections
+    if (!Array.isArray(keys) || keys.length === 0) return true
+    return keys.every(key => !isSelectionMissing(store.selections[key]))
+  })
+
   /** For process-driven steps, footer Confirm must wait for a successful run (payload includes `result`). */
   const confirmButtonDisabled = computed(() => {
     if (!props.requiresConfirmation) return false
+    if (!requiredSelectionsSatisfied.value) return true
     const p = stepReadyPayload.value
     if (!p) return true
     if (props.confirmationSource === 'process' && props.process?.trigger === 'component') {
       return p.result == null
     }
     return false
+  })
+
+  const shouldPromptExplanation = computed(() => {
+    if (!props.explanation) return false
+    if (props.confirmationSource === 'mapClick') {
+      return stepReadyPayload.value == null
+    }
+    return true
   })
 
   const isOpen = computed({
@@ -148,9 +185,8 @@
 
   if (props.confirmationSource === 'mapClick') {
     watch([isOpen, () => mapStore.activeRegion], ([open, region]) => {
-      if (open && region) {
-        stepReadyPayload.value = { region }
-      }
+      if (!open) return
+      stepReadyPayload.value = region ? { region } : null
     })
   }
 
@@ -223,6 +259,7 @@
   }
 
   async function onConfirmClick () {
+    if (props.requiresConfirmation && !requiredSelectionsSatisfied.value) return
     if (props.requiresConfirmation && !stepReadyPayload.value) return
     const payload = stepReadyPayload.value || {}
     stepReadyPayload.value = null

@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ActiveFeatureProperties: typeof import('./src/components/ActiveFeatureProperties.vue')['default']
     AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
+    FlashHighlight: typeof import('./src/components/FlashHighlight.vue')['default']
     LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
     LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']

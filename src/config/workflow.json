@@ -15,6 +15,7 @@
       "title": "Use Case",
       "drawerTitle": "Select your use case",
       "disabledOnContinue": true,
+      "confirmFlashWhenEnabled": true,
       "explanation": "Choose the use case that matches your analysis, then confirm to continue.",
       "requiresConfirmation": true,
       "confirmationSource": "component",
@@ -24,6 +25,7 @@
           "componentProps": {
             "label": "Use cases",
             "selectionKey": "userCaseSelection",
+            "flashWhenEnabled": true,
             "options": [
               {
                 "id": "administration",
@@ -49,6 +51,7 @@
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
       "disabledOnContinue": true,
+      "confirmFlashWhenEnabled": true,
       "requiredSteps": [
         "userCaseSelection"
       ],
@@ -74,6 +77,7 @@
                 "active": true,
                 "clickable": true,
                 "propertiesBox": "region",
+                "flashWhenEnabled": true,
                 "condition": "administration"
               },
               {
@@ -95,6 +99,7 @@
       "icon": "mdi-city-variant-outline",
       "drawerTitle": "Calculate UOM",
       "disabledOnContinue": true,
+      "confirmFlashWhenEnabled": true,
       "requiredSteps": [
         "regionSelection"
       ],
@@ -140,6 +145,7 @@
           "componentProps": {
             "label": "Landscape archetype",
             "selectionKey": "uomArchetype",
+            "flashWhenEnabled": true,
             "options": [
               {
                 "id": "coastal",
@@ -168,6 +174,7 @@
             "defaultValueSource": "store:map.suggestedUom",
             "requiresCalcCondition": true,
             "calcConditionSource": "store:app.selections.uomArchetype",
+            "flashWhenEnabled": true,
             "showCalcButton": true
           }
         }
@@ -184,6 +191,10 @@
       "explanation": "Select KCS and hazard type, then confirm to run the UOM KCS calculation.",
       "requiresConfirmation": true,
       "confirmationSource": "component",
+      "requiredSelections": [
+        "hazardSelection",
+        "kcsSelection"
+      ],
       "wps": {
         "identifier": "lare_kcs",
         "trigger": "stepComplete",
@@ -223,6 +234,7 @@
           "componentProps": {
             "label": "Hazards",
             "selectionKey": "hazardSelection",
+            "flashWhenEnabled": true,
             "conditionSource": "uomArchetype",
             "options": [
               {
@@ -253,7 +265,9 @@
           "componentProps": {
             "label": "KCS",
             "selectionKey": "kcsSelection",
+            "flashWhenEnabled": true,
             "conditionSource": "hazardSelection",
+            "disabledUntilCondition": true,
             "options": [
               {
                 "id": "agriculture",

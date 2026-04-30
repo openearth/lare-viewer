@@ -1,16 +1,22 @@
 <template>
   <div class="selection-list pa-4">
-    <v-select
-      v-model="model"
-      :items="filteredOptions"
-      :label="label"
-      item-title="name"
-      item-value="id"
-      variant="outlined"
-      density="compact"
-      clearable
-      hide-details
-    />
+    <flash-highlight
+      :enabled="needsSelectionInteraction"
+      :flash-when-enabled="flashWhenEnabled"
+    >
+      <v-select
+        v-model="model"
+        :items="filteredOptions"
+        :label="label"
+        item-title="name"
+        item-value="id"
+        variant="outlined"
+        density="compact"
+        clearable
+        hide-details
+        :disabled="isDisabledByCondition"
+      />
+    </flash-highlight>
     <v-btn
       v-if="confirmSelection"
       class="mt-3"
@@ -18,7 +24,7 @@
       variant="tonal"
       block
       size="small"
-      :disabled="pending == null"
+      :disabled="isDisabledByCondition || pending == null"
       @click="confirm"
     >
       {{ confirmLabel }}
@@ -29,15 +35,18 @@
 <script setup>
   import { ref, watch, onMounted, computed } from 'vue'
   import { useAppStore } from '@/stores/app'
+  import FlashHighlight from '@/components/FlashHighlight.vue'
 
   const props = defineProps({
     label: { type: String, required: true },
     options: { type: Array, required: true },
     selectionKey: { type: String, default: null },
     conditionSource: { type: String, default: null },
+    disabledUntilCondition: { type: Boolean, default: false },
     /** When true, store + step-complete only after the confirm button (dropdown is pending until then). */
     confirmSelection: { type: Boolean, default: false },
     confirmLabel: { type: String, default: 'Confirm' },
+    flashWhenEnabled: { type: Boolean, default: false },
   })
 
   const emit = defineEmits(['step-complete'])
@@ -63,6 +72,23 @@
     const raw = appStore.selections[props.conditionSource]
     const selectedId = raw != null && typeof raw === 'object' && 'id' in raw ? raw.id : raw
     return props.options.filter(option => !option.condition || option.condition === selectedId)
+  })
+
+  const conditionSourceSelected = computed(() => {
+    if (!props.conditionSource) return true
+    const raw = appStore.selections[props.conditionSource]
+    const selectedId = raw != null && typeof raw === 'object' && 'id' in raw ? raw.id : raw
+    return selectedId != null
+  })
+
+  const isDisabledByCondition = computed(() => {
+    return props.disabledUntilCondition && !conditionSourceSelected.value
+  })
+
+  const isSelectable = computed(() => filteredOptions.value.length > 0)
+  const needsSelectionInteraction = computed(() => {
+    if (!isSelectable.value || isDisabledByCondition.value) return false
+    return props.confirmSelection ? pending.value == null : committed.value == null
   })
 
   function selectionToStore (value) {
