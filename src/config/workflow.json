@@ -1,6 +1,7 @@
 {
   "logo": "/desirmed_logo.png",
   "initialSetup": {
+    "restartButton": true,
     "process": {
       "identifier": "lare-start",
       "trigger": "onStart",

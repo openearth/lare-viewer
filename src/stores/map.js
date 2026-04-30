@@ -235,7 +235,10 @@ export const useMapStore = defineStore('map', {
 
       // Remove all non-static layers from the map and visibility state
       this.mapboxLayers = this.mapboxLayers.filter(layer => {
-        const isStatic = staticIds.has(layer.id)
+        const baseId = layer.id.endsWith('_raster')
+          ? layer.id.replace('_raster', '')
+          : layer.id
+        const isStatic = staticIds.has(baseId)
         if (!isStatic) {
           delete this.layerVisibility[layer.id]
         }
@@ -244,6 +247,13 @@ export const useMapStore = defineStore('map', {
 
       // Strip any dynamic layer configs so legends update accordingly
       this.layersConfig = this.layersConfig.filter(cfg => staticIds.has(cfg.id))
+    },
+
+    resetWorkflowState () {
+      this.clearDynamicLayers()
+      this.layerVisibility = {}
+      this.layerClickableByStep = {}
+      this.clearActiveRegion()
     },
   },
 })
