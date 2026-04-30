@@ -14,6 +14,7 @@
       "id": "userCaseSelection",
       "title": "Use Case",
       "drawerTitle": "Select your use case",
+      "disabledOnContinue": true,
       "explanation": "Choose the use case that matches your analysis, then confirm to continue.",
       "requiresConfirmation": true,
       "confirmationSource": "component",
@@ -47,6 +48,7 @@
       "id": "regionSelection",
       "title": "Region Selection",
       "drawerTitle": "Select a base map",
+      "disabledOnContinue": true,
       "requiredSteps": [
         "userCaseSelection"
       ],
@@ -92,6 +94,7 @@
       "title": "Calculate UOM",
       "icon": "mdi-city-variant-outline",
       "drawerTitle": "Calculate UOM",
+      "disabledOnContinue": true,
       "requiredSteps": [
         "regionSelection"
       ],
@@ -174,6 +177,7 @@
       "id": "kcsSelection",
       "title": "KCS & Hazards",
       "drawerTitle": "Select KCS and hazard",
+      "disabledOnContinue": true,
       "requiredSteps": [
         "uom"
       ],

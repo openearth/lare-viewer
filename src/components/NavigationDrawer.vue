@@ -16,8 +16,8 @@
           v-for="step in config.steps"
           :key="step.id"
           :title="step.title"
-          :disabled="!store.isStepAvailable(step)"
-          :class="{ 'step-locked': !store.isStepAvailable(step) }"
+          :disabled="isStepDisabled(step)"
+          :class="{ 'step-locked': isStepDisabled(step) }"
           @click="handleStepClick(step)"
         />
       </div>
@@ -77,8 +77,17 @@
   })
 
   function handleStepClick (step) {
-    if (!store.isStepAvailable(step)) return
+    if (isStepDisabled(step)) return
     store.toggleMenu(step.id)
+  }
+
+  function isStepDisabled (step) {
+    if (!store.isStepAvailable(step)) return true
+    const disableAfterContinue =
+      step.disabledOnContinue === true &&
+      store.isStepCompleted(step.id) &&
+      store.activeMenu !== step.id
+    return disableAfterContinue
   }
 
   async function onRestart () {
