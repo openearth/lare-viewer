@@ -14,17 +14,22 @@
         hide-details
         class="number-input__field"
       />
-      <v-btn
+      <flash-highlight
         v-if="showCalcButton"
-        class="number-input__calc-btn"
-        icon="mdi-calculator"
-        variant="tonal"
-        color="primary"
-        size="small"
-        :disabled="value == null || value < min || value > max"
-        :title="calcButtonTitle"
-        @click="onCalcClick"
-      />
+        :enabled="needsCalcInteraction"
+        :flash-when-enabled="flashWhenEnabled"
+      >
+        <v-btn
+          class="number-input__calc-btn"
+          icon="mdi-calculator"
+          variant="tonal"
+          color="primary"
+          size="small"
+          :disabled="isCalcDisabled"
+          :title="calcButtonTitle"
+          @click="onCalcClick"
+        />
+      </flash-highlight>
     </div>
   </div>
 </template>
@@ -34,6 +39,7 @@
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import { resolveInputValue } from '@/lib/ogc-process/resolve-input'
+  import FlashHighlight from '@/components/FlashHighlight.vue'
 
   const appStore = useAppStore()
   const mapStore = useMapStore()
@@ -47,7 +53,10 @@
     defaultValue: { type: Number, default: 0 },
     defaultValueSource: { type: String, default: null },
     showCalcButton: { type: Boolean, default: false },
+    requiresCalcCondition: { type: Boolean, default: false },
+    calcConditionSource: { type: String, default: null },
     calcButtonTitle: { type: String, default: 'Calculate' },
+    flashWhenEnabled: { type: Boolean, default: false },
   })
 
   const emit = defineEmits(['step-ready', 'run-process'])
@@ -62,6 +71,27 @@
   })
 
   const value = ref(resolvedDefault.value)
+  const lastRunValue = ref(null)
+
+  const calcConditionMet = computed(() => {
+    if (!props.requiresCalcCondition) return true
+    if (!props.calcConditionSource) return false
+    const resolved = resolveInputValue(props.calcConditionSource, {
+      payload: { value: value.value },
+      stores: { app: appStore, map: mapStore },
+    })
+    return resolved !== undefined && resolved !== null && resolved !== ''
+  })
+
+  const isCalcDisabled = computed(() => {
+    const invalidValue = value.value == null || value.value < props.min || value.value > props.max
+    return invalidValue || !calcConditionMet.value
+  })
+
+  const needsCalcInteraction = computed(() => {
+    if (!props.showCalcButton || isCalcDisabled.value) return false
+    return lastRunValue.value !== value.value
+  })
 
   watch(resolvedDefault, (newVal) => {
     if (newVal != null) {
@@ -76,7 +106,8 @@
   }, { immediate: true })
 
   function onCalcClick () {
-    if (props.showCalcButton && value.value != null && value.value >= props.min && value.value <= props.max) {
+    if (props.showCalcButton && !isCalcDisabled.value) {
+      lastRunValue.value = value.value
       emit('run-process', { value: value.value })
     }
   }

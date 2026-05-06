@@ -51,6 +51,13 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    resetWorkflowState () {
+      this.activeMenu = null
+      this.completedSteps = []
+      this.processResults = {}
+      this.selections = {}
+    },
+
     resetStepsFrom (stepId) {
       const steps = config.steps
       const index = steps.findIndex(s => s.id === stepId)

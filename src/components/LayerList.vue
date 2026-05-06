@@ -25,6 +25,7 @@
         v-if="layer.propertiesBox"
         :layer-id="layer.id"
         :properties-box-type="layer.propertiesBox"
+        :flash-when-enabled="layer.flashWhenEnabled ?? false"
         class="mt-0"
       />
     </template>
@@ -32,7 +33,7 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, watch } from 'vue'
+  import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import ActiveFeatureProperties from '@/components/ActiveFeatureProperties.vue'
@@ -44,6 +45,7 @@
 
   const appStore = useAppStore()
   const mapStore = useMapStore()
+  const stepId = inject('stepId', null)
 
   const filteredLayers = computed(() => {
     if (!props.conditionSource) {
@@ -68,8 +70,12 @@
 
   onMounted(() => {
     mapStore.initializeLayerVisibility(props.layers)
-    mapStore.initializeLayerClickable(props.layers)
+    mapStore.registerStepClickability(stepId, props.layers)
     syncVisibilityToFilter()
+  })
+
+  onUnmounted(() => {
+    mapStore.unregisterStepClickability(stepId)
   })
 
   watch(filteredLayers, syncVisibilityToFilter)
