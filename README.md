@@ -6,6 +6,17 @@ The app is **driven by configuration**: most behaviour (steps, layers, which pro
 
 ---
 
+## Features
+
+- 🗺️ **Interactive Map Viewing**: Powered by Mapbox GL for smooth, interactive map experiences
+- 🌐 **OGC Services Support**: Full support for OGC (Open Geospatial Consortium) services - layers on the map and background processes are all OGC services
+- 🎨 **Modern UI**: Built with Vuetify 3 for a beautiful, responsive user interface
+- ⚡ **Fast Development**: Leverages Vite for instant hot module replacement and fast builds
+- 🗃️ **State Management**: Uses Pinia for efficient state management
+- 🚦 **Routing**: Vue Router for seamless navigation
+
+---
+
 ## What you get (at a glance)
 
 | Piece | Role |
@@ -23,7 +34,7 @@ The app is **driven by configuration**: most behaviour (steps, layers, which pro
 - **Node.js** 18+ (20+ recommended) and **npm**
 - A **Mapbox access token** ([Mapbox account](https://account.mapbox.com/))
 - A running **OGC API Processes** backend that exposes the processes your `workflow.json` references (for example [LARE](https://github.com/DesirMED/LARE) with pygeoapi)
-- **GeoServer** (or compatible WMS) if you use the default layer URLs
+- **GeoServer** (or compatible OGC Services) if you use the default layer URLs
 
 ---
 
@@ -63,7 +74,7 @@ VITE_OGC_API_URL=http://localhost:5000
 npm run dev
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:5173`).
+Open the URL shown in the terminal (usually `http://localhost:3000`).
 
 ### 4. Production build
 
@@ -296,4 +307,5 @@ Issues and pull requests are welcome. Run **`npm run lint`** before submitting c
 ## Acknowledgments
 
 - [Vue.js](https://vuejs.org/), [Vite](https://vitejs.dev/), [Vuetify](https://vuetifyjs.com/), [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
+- [Studio Meta](https://github.com/studiometa) for [`@studiometa/vue-mapbox-gl`](https://github.com/studiometa/vue-mapbox-gl), used for Vue 3 + Mapbox GL integration
 - [LARE](https://github.com/DesirMED/LARE) — backend / pygeoapi processes
