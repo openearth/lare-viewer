@@ -185,46 +185,48 @@
       "title": "KCS & Hazards",
       "drawerTitle": "Select KCS and hazard",
       "disabledOnContinue": true,
+      "confirmFlashWhenEnabled": true,
       "requiredSteps": [
         "uom"
       ],
-      "explanation": "Select KCS and hazard type, then confirm to run the UOM KCS calculation.",
+      "explanation": "Select hazard and KCS, then click Calculate KCS risk. When the risk layer appears on the map, confirm to finish.",
       "requiresConfirmation": true,
-      "confirmationSource": "component",
+      "confirmationSource": "process",
       "requiredSelections": [
         "hazardSelection",
         "kcsSelection"
       ],
-      "wps": {
-        "identifier": "lare_kcs",
-        "trigger": "stepComplete",
+      "process": {
+        "identifier": "lare-uomkcs",
+        "trigger": "component",
         "inputs": [
           {
-            "id": "archetype",
-            "type": "LiteralData",
-            "source": "store:app.selections.archetypeSelection"
-          },
-          {
-            "id": "kcs",
-            "type": "LiteralData",
-            "source": "store:app.selections.kcsSelection"
-          },
-          {
             "id": "session_id",
-            "type": "LiteralData",
-            "source": "store:app.wpsResults.initialSetup.session_id"
+            "source": "store:app.processResults.initialSetup.session_id"
+          },
+          {
+            "id": "archetype",
+            "source": "store:app.selections.uomArchetype"
           },
           {
             "id": "hazard",
-            "type": "LiteralData",
             "source": "store:app.selections.hazardSelection"
+          },
+          {
+            "id": "kcs",
+            "source": "store:app.selections.kcsSelection"
           }
         ],
         "storeResultAs": "uomKcs",
         "outputActions": [
           {
+            "action": "removeLayer",
+            "fromResultKey": "uomKcs",
+            "path": "response"
+          },
+          {
             "action": "addLayer",
-            "path": "layers"
+            "path": "response"
           }
         ]
       },
@@ -238,22 +240,22 @@
             "conditionSource": "uomArchetype",
             "options": [
               {
-                "id": "salinization",
-                "name": "Salinization",
+                "id": "soil_salinity",
+                "name": "Salinity",
                 "condition": "coastal"
               },
               {
-                "id": "flood",
+                "id": "pluvial_RP200",
                 "name": "Flood",
                 "condition": "coastal"
               },
               {
-                "id": "heat",
+                "id": "utci_extreme",
                 "name": "Heat",
                 "condition": "urban"
               },
               {
-                "id": "drought",
+                "id": "cdinx_drought",
                 "name": "Drought",
                 "condition": "rural"
               }
@@ -272,24 +274,35 @@
               {
                 "id": "agriculture",
                 "name": "Agriculture",
-                "condition": "salinization"
+                "condition": "soil_salinity"
               },
               {
                 "id": "transport",
                 "name": "Transport",
-                "condition": "flood"
+                "condition": "pluvial_RP200"
               },
               {
                 "id": "agriculture",
                 "name": "Agriculture",
-                "condition": "drought"
+                "condition": "cdinx_drought"
               },
               {
-                "id": "vulnerable_population_hospitals",
+                "id": "hospitals",
                 "name": "Vulnerable population (Hospitals)",
-                "condition": "heat"
+                "condition": "utci_extreme"
               }
             ]
+          }
+        },
+        {
+          "component": "ProcessRunButton",
+          "componentProps": {
+            "label": "Calculate KCS risk",
+            "requiredSelections": [
+              "hazardSelection",
+              "kcsSelection"
+            ],
+            "flashWhenEnabled": true
           }
         }
       ]

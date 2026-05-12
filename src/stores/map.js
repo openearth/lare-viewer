@@ -204,8 +204,7 @@ export const useMapStore = defineStore('map', {
         this.mapboxLayers.push(built)
         this.layerVisibility[layerConfig.id] = true
 
-        // Ensure dynamic layers also show up in the legend by
-        // creating a corresponding layersConfig entry when needed.
+        // Dynamic layers: append config so LayerLegend can resolve url/layer.
         const hasConfig = this.layersConfig.some(cfg => cfg.id === layerConfig.id)
         if (!hasConfig) {
           this.layersConfig.push({
@@ -223,7 +222,7 @@ export const useMapStore = defineStore('map', {
       this.mapboxLayers = this.mapboxLayers.filter(l => l.id !== layerId)
       delete this.layerVisibility[layerId]
 
-      // Remove any dynamic-only config entry so legends stay in sync
+      // Drop dynamic-only legend rows when the layer is removed.
       this.layersConfig = this.layersConfig.filter(cfg => !(cfg.id === layerId && cfg.dynamic))
     },
 
