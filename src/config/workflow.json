@@ -240,7 +240,7 @@
             "conditionSource": "uomArchetype",
             "options": [
               {
-                "id": "soil_salinity",
+                "id": "salinity",
                 "name": "Salinity",
                 "condition": "coastal"
               },
@@ -250,12 +250,12 @@
                 "condition": "coastal"
               },
               {
-                "id": "utci_extreme",
+                "id": "heat",
                 "name": "Heat",
                 "condition": "urban"
               },
               {
-                "id": "cdinx_drought",
+                "id": "drought",
                 "name": "Drought",
                 "condition": "rural"
               }
@@ -272,9 +272,9 @@
             "disabledUntilCondition": true,
             "options": [
               {
-                "id": "agriculture",
+                "id": "landuse",
                 "name": "Agriculture",
-                "condition": "soil_salinity"
+                "condition": "salinity"
               },
               {
                 "id": "transport",
@@ -282,14 +282,14 @@
                 "condition": "pluvial_RP200"
               },
               {
-                "id": "agriculture",
+                "id": "landuse",
                 "name": "Agriculture",
-                "condition": "cdinx_drought"
+                "condition": "drought"
               },
               {
                 "id": "hospitals",
                 "name": "Vulnerable population (Hospitals)",
-                "condition": "utci_extreme"
+                "condition": "heat"
               }
             ]
           }
