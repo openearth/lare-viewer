@@ -1,8 +1,7 @@
 import buildGeoserverUrl from './build-geoserver-url'
 
-const defaultUrl = process.env.VUE_APP_GEOSERVER_BASE_URL
 
-export default ({ url: rawUrl = defaultUrl, id, layer, styles = '', paint = {}, tileSize = 256, time, filter, mapServiceVersion }) => {
+export default ({ url: rawUrl, id, layer, styles = '', paint = {}, tileSize = 256, time, filter, mapServiceVersion }) => {
   const url = new URL(rawUrl)
   const searchParamEntries = url.searchParams.entries()
   const searchParamsObject = Object.fromEntries(searchParamEntries)

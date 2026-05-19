@@ -11,10 +11,20 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AppFooter: typeof import('./src/components/AppFooter.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    ActiveFeatureProperties: typeof import('./src/components/ActiveFeatureProperties.vue')['default']
+    AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
+    FlashHighlight: typeof import('./src/components/FlashHighlight.vue')['default']
+    LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
+    LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
+    MapLayer: typeof import('./src/components/MapLayer.vue')['default']
+    MapZoomControl: typeof import('./src/components/MapZoomControl.vue')['default']
+    NavigationDrawer: typeof import('./src/components/NavigationDrawer.vue')['default']
+    NumberInput: typeof import('./src/components/NumberInput.vue')['default']
+    ProcessRunButton: typeof import('./src/components/ProcessRunButton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SelectionList: typeof import('./src/components/SelectionList.vue')['default']
+    SubMenu: typeof import('./src/components/SubMenu.vue')['default']
   }
 }

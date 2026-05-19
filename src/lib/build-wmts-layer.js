@@ -1,9 +1,8 @@
 import buildGeoserverUrl from './build-geoserver-url'
 
-const defaultUrl = import.meta.env.VITE_WMTS_URL
 
 function buildWmtsLayer ({
-  url: rawUrl = defaultUrl,
+  url: rawUrl,
   id,
   layer,
   style = '',
@@ -12,6 +11,7 @@ function buildWmtsLayer ({
   bbox = [],
   format,
   vectorType,
+  promoteId,
   minZoom,
   maxZoom,
 }) {
@@ -34,13 +34,14 @@ function buildWmtsLayer ({
 
   return format === 'application/vnd.mapbox-vector-tile'
     ? {
-      'id': layer.split(':')[1],
+      'id': id, // Use original config ID to match visibility/clickable state
       layer,
       'type': vectorType,
       'source': {
         type: 'vector',
         tiles: [ tile ],
         ...(bbox && Array.isArray(bbox) && bbox.length > 0 && { bounds: bbox }),
+        ...(promoteId && { promoteId: { [layer.split(':')[1]]: promoteId } }),
       },
       'source-layer': layer.split(':')[1],
       paint,
