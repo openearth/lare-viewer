@@ -1,5 +1,5 @@
 {
-  "logo": "/desirmed_logo.png",
+  "logo": "/desirmed-nbracer.png",
   "initialSetup": {
     "restartButton": true,
     "process": {
@@ -167,7 +167,7 @@
           "componentProps": {
             "label": "Hexagon size (in m²)",
             "suffix": "m²",
-            "min": 100,
+            "min": 0,
             "max": 50000000,
             "step": 100000,
             "defaultValue": 1000,

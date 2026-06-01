@@ -9,7 +9,7 @@
           <v-img
             :src="config.logo"
             alt="DesirMED Logo"
-            width="80px"
+            width="140px"
           />
         </v-list-item>
         <v-list-item

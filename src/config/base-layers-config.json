@@ -4,7 +4,17 @@
         "name": "landuse",
         "layer": "landuse:U2018_CLC2018_V2020_20u1_cog",
         "url": "https://desirmed.openearth.eu/geoserver/landuse/wms?",
-        "format": "image/png"
+        "format": "image/png",
+        "legendLayout": "dense",
+        "legendCardMaxWidth": 360,
+        "legendBodyMaxHeight": 300,
+        "legendExpanded": true,
+        "legendOptions": {
+            "columns": 1,
+            "fontSize": 8,
+            "labelMargin": 12,
+            "dpi": 120
+        }
     },
     {
         "id": "region:nuts_2021_level_3",
