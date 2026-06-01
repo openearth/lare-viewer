@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import area from '@turf/area'
 import layersConfig from '@/config/base-layers-config.json'
 import buildMapboxLayer from '@/lib/build-mapbox-layer'
+import { pickLayerLegendFields } from '@/lib/legend-config'
 import { useAppStore } from '@/stores/app'
 
 function normalizeLayerUrlForBrowser (rawUrl) {
@@ -86,6 +87,7 @@ export const useMapStore = defineStore('map', {
               url: layerConfig.url,
               layer: layerConfig.layer,
               name: layerConfig.name,
+              ...pickLayerLegendFields(layerConfig),
             })
           }
         }
