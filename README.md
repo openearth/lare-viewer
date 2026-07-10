@@ -1,6 +1,6 @@
 # LARE Viewer
 
-A **Vue 3** web application for **Landscape Archetype Regionalization (LARE)** workflows. It combines an **interactive Mapbox GL map** with a **step-by-step sidebar** so users can pick a use case, select a region, run analyses, and explore GeoServer layers.
+A **Vue 3** web application for **Landscape Resilience Explorer (LARE)** workflows. It combines an **interactive Mapbox GL map** with a **step-by-step sidebar** so users can pick a use case, select a region, run analyses, and explore GeoServer layers.
 
 The app is **driven by configuration**: most behaviour (steps, layers, which process runs when) lives in JSON files rather than hard-coded UI logic. That makes it easier to adapt the same codebase to new workflows or regions.
 
