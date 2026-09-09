@@ -1,169 +1,155 @@
-# LARE Viewer
+# Config-driven Map Viewer
 
-A **Vue 3** web application for **Landscape Resilience Explorer (LARE)** workflows. It combines an **interactive Mapbox GL map** with a **step-by-step sidebar** so users can pick a use case, select a region, run analyses, and explore GeoServer layers.
+A **Vue 3** map application shell: interactive **Mapbox GL** map + optional **step-by-step sidebar**, driven almost entirely by **JSON configuration**.
 
-The app is **driven by configuration**: most behaviour (steps, layers, which process runs when) lives in JSON files rather than hard-coded UI logic. That makes it easier to adapt the same codebase to new workflows or regions.
+The same shared codebase powers different products (for example [LARE Viewer](https://github.com/openearth/lare-viewer) and [NL2120 Viewer](https://github.com/openearth/NL2120-viewer)). What changes between deployments is mainly:
+
+- `src/config/workflow.json` — UI steps, components, processes, dialogs
+- `src/config/base-layers-config.json` — layer sources and styling
+- `public/` assets (logo, favicon)
+- `.env` / Mapbox & service URLs
+- `src/lib/constant.js` — default map center and zoom
+
+**Design idea:** enable or disable features by editing config (and optionally dropping in a new Vue component), not by rewriting the app shell.
 
 ---
 
 ## Features
 
-- 🗺️ **Interactive Map Viewing**: Powered by Mapbox GL for smooth, interactive map experiences
-- 🌐 **OGC Services Support**: Full support for OGC (Open Geospatial Consortium) services - layers on the map and background processes are all OGC services
-- 🎨 **Modern UI**: Built with Vuetify 3 for a beautiful, responsive user interface
-- ⚡ **Fast Development**: Leverages Vite for instant hot module replacement and fast builds
-- 🗃️ **State Management**: Uses Pinia for efficient state management
-- 🚦 **Routing**: Vue Router for seamless navigation
-
----
-
-## What you get (at a glance)
+- Interactive Mapbox GL map (WMS / WMTS raster and vector tiles)
+- Config-driven wizard steps with Confirm / Continue flows
+- Optional OGC API Processes (JSON execute) with dynamic layer add/remove
+- Layer toggles, legends (WMS image or category swatches), feature info, related geometry, attribute filters
+- Optional markdown info dialog
+- Vuetify 3 UI, Pinia state, Vite tooling
 
 | Piece | Role |
 |--------|------|
-| **`workflow.json`** | Defines menu steps, components per step, confirmations, and OGC API Process calls |
-| **`base-layers-config.json`** | Default map layers, legends, and styling |
-| **Pinia stores** (`app`, `map`) | UI state, selections, process results, dynamic WMS layers |
-| **`ogc-process`** | Builds JSON execute requests to your OGC API Processes server (e.g. pygeoapi) |
-| **Vue components** | `SubMenu`, `SelectionList`, `LayerList`, `NumberInput`, map, etc. |
+| `workflow.json` | Steps, components, confirmations, processes, info dialog, legend layout |
+| `base-layers-config.json` | Layer URLs, paint, legends, category styles |
+| Pinia `app` / `map` | Selections, process results, visibility, filters, clicked feature |
+| `src/lib/ogc-process/` | Resolve inputs → execute → output actions |
+| `src/components/` | Pluggable UI blocks loaded by **filename** |
 
 ---
 
 ## Prerequisites
 
-- **Node.js** 18+ (20+ recommended) and **npm**
+- **Node.js** 20+ recommended (see `package.json` `engines` if present) and **npm**
 - A **Mapbox access token** ([Mapbox account](https://account.mapbox.com/))
-- A running **OGC API Processes** backend that exposes the processes your `workflow.json` references (for example [LARE](https://github.com/DesirMED/LARE) with pygeoapi)
-- **GeoServer** (or compatible OGC Services) if you use the default layer URLs
+- **GeoServer** (or compatible WMS/WMTS/WFS) for map layers you configure
+- An **OGC API Processes** server only if your workflow runs processes (e.g. [LARE](https://github.com/DesirMED/LARE) / pygeoapi)
 
 ---
 
 ## Quick start
 
-### 1. Clone and install
-
 ```bash
-git clone https://github.com/DesirMED/lare-viewer.git
-cd lare-viewer
+git clone <this-repository-url>
+cd <repository-folder>
 npm install
 ```
 
-### 2. Environment variables
+### Environment
 
-Create a `.env` file in the project root (same folder as `package.json`). Vite only exposes variables that start with `VITE_`.
+Create a `.env` in the project root. Vite only exposes variables prefixed with `VITE_`.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_MAPBOX_TOKEN` | **Yes** | Mapbox public access token |
-| `VITE_OGC_API_URL` | Recommended | Base URL of the OGC API (no trailing slash), e.g. `http://localhost:5000` |
-| `VITE_WPS_BASE_URL` | Fallback | Used only if `VITE_OGC_API_URL` is not set; same semantics as the OGC API base URL |
-| `VITE_GEOSERVER_PUBLIC_BASE_URL` | Optional | **Browser-reachable** GeoServer base URL. Use this when the app runs in the browser but GeoServer is only reachable via a different host than in `base-layers-config.json` (e.g. Docker: config may use `http://geoserver:8080/geoserver`, while the browser needs `http://localhost:8080/geoserver`) |
-
-Example `.env`:
+| `VITE_MAPBOX_TOKEN` | **Yes** | Mapbox public token |
+| `VITE_OGC_API_URL` | If you use processes | OGC API base URL (no trailing slash), e.g. `http://localhost:5000` |
+| `VITE_WPS_BASE_URL` | Fallback | Used only if `VITE_OGC_API_URL` is unset |
+| `VITE_GEOSERVER_PUBLIC_BASE_URL` | Optional | Browser-reachable GeoServer base when JSON URLs use Docker/internal hosts |
 
 ```env
 VITE_MAPBOX_TOKEN=pk.ey...
 VITE_OGC_API_URL=http://localhost:5000
-# If GeoServer in JSON is internal-only, point the browser here:
 # VITE_GEOSERVER_PUBLIC_BASE_URL=http://localhost:8080/geoserver
 ```
 
-### 3. Run the dev server
-
 ```bash
-npm run dev
-```
-
-Open the URL shown in the terminal (usually `http://localhost:3000`).
-
-### 4. Production build
-
-```bash
-npm run build
-```
-
-Output is in `dist/`. Preview locally:
-
-```bash
+npm run dev      # usually http://localhost:3000
+npm run build    # output in dist/
 npm run preview
-```
-
-### 5. Lint
-
-```bash
 npm run lint
 ```
 
 ---
 
-## How the app is structured
+## How the app works
 
-High-level flow:
+1. **`App.vue`** loads `workflow.json`. Optional `initialSetup.process` with `trigger: "onStart"` runs once. First step opens automatically if `steps` is non-empty. Global overlays (`FeatureInfoPanel`, `LayerLegend`, `InfoDialog`) mount always but **only activate when config enables them**.
+2. **`NavigationDrawer.vue`** lists each step and mounts one **`SubMenu`** per step.
+3. **`SubMenu.vue`** loads components by name via `import.meta.glob('@/components/*.vue')`, handles Confirm, and runs processes according to `process.trigger`.
+4. **`views/Home.vue` → `MapComponent.vue`** hosts the map; the **map store** builds layers from `base-layers-config.json` and tracks selection / filters / dynamic layers.
 
-1. **`App.vue`** loads `workflow.json`. If `initialSetup.process` has `trigger: "onStart"`, it runs that process once (e.g. `lare-start`) and stores the result under `storeResultAs`.
-2. **`NavigationDrawer.vue`** renders one **`SubMenu`** per step from `workflow.json`.
-3. **`SubMenu.vue`** shows the step title, optional explanation, dynamic components (`SelectionList`, `LayerList`, `NumberInput`, …), and a **Continue** / **Confirm** flow depending on `requiresConfirmation` and `confirmationSource`.
-4. **`MapView.vue`** hosts the Mapbox map; the **map store** adds WMS raster/vector layers and tracks the clicked region for map-based steps.
-5. When a **`process`** block runs, **`executeProcessConfig`** (`src/lib/ogc-process/execute-config.js`) resolves inputs, POSTs to `/processes/{identifier}/execution?f=json`, then optionally saves results and applies **`outputActions`** (e.g. add a WMS layer).
-
-### Important directories
+### Project layout
 
 ```
 src/
 ├── config/
-│   ├── workflow.json          # Steps, components, processes (main product config)
-│   └── base-layers-config.json
-├── components/                 # UI: drawer, submenus, lists, map, legend…
+│   ├── workflow.json              # Product UI + processes
+│   ├── base-layers-config.json    # Layer service definitions
+│   └── info-dialog.md             # Optional; used if infoDialog.contentFile points here
+├── components/                    # Wizard + map UI (name = workflow component id)
 ├── stores/
-│   ├── app.js                 # Steps, selections, process results, menu state
-│   └── map.js                 # Map instance, layers, region selection, per-step click rules
+│   ├── app.js                     # Steps, selections, processResults, info dialog
+│   └── map.js                     # Layers, visibility, filters, region, hover
 ├── lib/
-│   └── ogc-process/           # Execute OGC API Processes from workflow config
-├── views/
-│   └── MapView.vue
+│   ├── ogc-process/               # Execute + resolve inputs + output actions
+│   ├── constant.js                # MAP_CENTER, MAP_ZOOM, basemap styles
+│   └── …                          # Layer builders, legend, category-style, helpers
+├── views/Home.vue
 └── App.vue
 ```
 
 ---
 
-## Configuring a workflow (`workflow.json`)
+## Starting a new product from this codebase
 
-Think of **`workflow.json` as the product definition**: you can add steps, change labels, wire new processes, and toggle map layers without rewriting the shell of the app.
+1. Copy / fork the repo.
+2. Replace logo under `public/` and set `workflow.json` → `logo` (and optional `logoWidth`, `logoAlt`).
+3. Set `MAP_CENTER` / `MAP_ZOOM` in `src/lib/constant.js`.
+4. Fill `base-layers-config.json` with your layers.
+5. Rewrite `workflow.json` steps (or start empty — see below).
+6. Set `.env` for Mapbox (and OGC/GeoServer as needed).
+7. Only add a new `.vue` under `components/` when an existing block cannot do the job; then reference it by filename in `workflow.json`.
 
-### Top level
-
-| Field | Purpose |
-|--------|---------|
-| `logo` | Path under `public/` for the header logo |
-| `initialSetup` | Optional; often used to run a bootstrap process on load |
-| `steps` | Ordered list of wizard steps shown in the navigation drawer |
-
-### Minimal skeleton (empty steps)
-
-Use this as a **starting file** when you are wiring a new deployment from scratch. It is valid JSON and loads in the app; you then add entries under `steps` (and optional `initialSetup.process`) as needed.
+**Minimal valid workflow** (shell only — no steps):
 
 ```json
 {
-  "logo": "/desirmed_logo.png",
+  "logo": "/your-logo.png",
   "initialSetup": {},
   "steps": []
 }
 ```
 
-- **`steps: []`** — The side drawer shows no wizard items, and **`App.vue` does not auto-open a submenu** (there is no first step). That is fine for smoke-testing the shell; for a real workflow, add at least one step object.
-- **`initialSetup: {}`** — Optional. Omit it entirely if you prefer, or replace it with `restartButton` / `process` when you are ready (see the next section).
+With `steps: []`, the drawer has no wizard items and nothing auto-opens. Useful to verify the map shell before wiring UX.
+
+---
+
+## Configuring `workflow.json`
+
+### Top-level fields
+
+| Field | Purpose |
+|--------|---------|
+| `logo` | Path under `public/` |
+| `logoWidth` | Optional CSS width (e.g. `"140px"`). Default `"80px"` |
+| `logoAlt` | Optional image alt text |
+| `initialSetup` | Restart button and/or bootstrap `process` |
+| `legendStack` | `"vertical"` (default) or `"horizontal"` for the floating legend |
+| `infoDialog` | Optional markdown dialog (see below) |
+| `steps` | Ordered wizard steps |
 
 ### `initialSetup`
-
-Used in **`App.vue`** when `initialSetup.process.trigger` is `"onStart"`. Typical pattern: call **`lare-start`** (or your equivalent), store the JSON response (e.g. session id) for later process inputs.
-
-Example:
 
 ```json
 "initialSetup": {
   "restartButton": true,
   "process": {
-    "identifier": "lare-start",
+    "identifier": "my-start",
     "trigger": "onStart",
     "inputs": [],
     "storeResultAs": "initialSetup"
@@ -171,141 +157,249 @@ Example:
 }
 ```
 
-- **`restartButton`**: when `true`, the drawer can show a control to reset workflow/map state and return to the first step (see `NavigationDrawer.vue`).
+- **`restartButton`**: shows Restart in the drawer after the first step is completed; resets app + map state and re-runs `onStart` if present.
 
-### Each step
+### `infoDialog`
 
-Common fields:
+Only active when `enabled: true`. Markdown file must live under `src/config/` (loaded via Vite glob).
 
 | Field | Meaning |
 |--------|---------|
-| `id` | Stable id (used for routing, store keys, `requiredSteps`) |
-| `title` | Short label in the drawer |
-| `drawerTitle` | Longer heading inside the open submenu |
-| `icon` | Optional Vuetify MDI icon name |
-| `explanation` | Help text above the controls |
-| `requiredSteps` | Step ids that must be completed before this step is available |
-| `disabledOnContinue` | If true, user must use **Confirm** (not only **Continue**) to advance when confirmation is required |
-| `confirmFlashWhenEnabled` | Subtle highlight on the confirm area when the step is ready to confirm |
-| `explanationFlashWhenAvailable` | When true, the explanation text can pulse to draw attention while it is relevant |
-| `requiresConfirmation` | If true, advancing waits for explicit confirmation |
-| `confirmationSource` | How readiness is determined: see below |
-| `requiredSelections` | For `component` confirmation: **all** listed selection keys must have a value before confirm is enabled |
-| `completionEvent` | If `"auto"`, the step marks itself complete when its submenu opens (see `SubMenu.vue`) |
-| `components` | List of `{ "component": "...", "componentProps": { ... } }` |
-| `process` | Optional OGC process; **when** it runs is controlled by `process.trigger` |
+| `enabled` | Master switch |
+| `showOnStart` | Open once on load (unless “remembered”) |
+| `showButton` | Info icon in the drawer footer |
+| `remember` | `"local"` \| `"session"` \| `"always"` (always = never persist “seen”) |
+| `storageKey` | Optional; default `viewer:info-dialog-seen` |
+| `contentFile` | e.g. `"info-dialog.md"` |
+| `title`, `closeLabel`, `width`, `height` | Dialog chrome |
+
+### Each step
+
+| Field | Meaning |
+|--------|---------|
+| `id` | Stable id (`requiredSteps`, store keys) |
+| `title` | Drawer label |
+| `drawerTitle` | Submenu heading |
+| `icon` | Optional MDI icon name |
+| `explanation` | Help text above footer |
+| `requiredSteps` | Step ids that must be completed first |
+| `disabledOnContinue` | After complete, step stays locked unless reopened while active |
+| `requiresConfirmation` | Footer **Confirm** required to advance |
+| `confirmationSource` | `"component"` \| `"mapClick"` \| `"process"` |
+| `requiredSelections` | Selection keys that must be set before Confirm enables |
+| `confirmFlashWhenEnabled` / `explanationFlashWhenAvailable` | Attention flashes |
+| `completionEvent` | `"auto"` → complete when submenu opens |
+| `components` | `[{ "component": "Name", "componentProps": { … } }]` |
+| `process` | Optional OGC process block |
 
 ### `confirmationSource`
 
-| Value | Behaviour |
-|--------|-----------|
-| `"component"` | Child components emit completion; **`requiredSelections`** can require multiple dropdowns (e.g. archetype + numeric input) before confirm |
-| `"mapClick"` | User must click a feature on the map; region info is stored and confirm enables when the click target is valid |
-| `"process"` | A process runs (e.g. calculator); confirm may depend on process success |
+| Value | Ready when… |
+|--------|-------------|
+| `component` | Child signals ready / selections satisfied |
+| `mapClick` | A map feature is selected (`mapStore.activeRegion`) |
+| `process` | Process ran successfully (for `trigger: "component"`, Confirm waits for a result) |
 
-### OGC process block (`process`)
-
-Runs against **`VITE_OGC_API_URL`** (or **`VITE_WPS_BASE_URL`**). Example aligned with the default UOM step:
+### Process block
 
 ```json
 "process": {
-  "identifier": "lare-uom",
+  "identifier": "my-process",
   "trigger": "component",
   "inputs": [
     { "id": "session_id", "source": "store:app.processResults.initialSetup.session_id" },
     { "id": "uom_size", "source": "payload:value" },
-    { "id": "layer_name", "source": "store:app.selections.userCaseSelection.layerNameForProcess" },
-    { "id": "id", "source": "store:map.activeRegionId" },
-    { "id": "archetype", "source": "store:app.selections.uomArchetype" }
+    { "id": "id", "source": "store:map.activeRegionId" }
   ],
   "storeResultAs": "uom",
   "outputActions": [
-    {
-      "action": "addLayer",
-      "path": "response"
-    }
+    { "action": "removeLayer", "fromResultKey": "uom", "path": "response" },
+    { "action": "addLayer", "path": "response" }
   ]
 }
 ```
 
-- **`identifier`**: process id on the server (pygeoapi `/processes/{id}`).
-- **`trigger`** — where execution is hooked (see `SubMenu.vue` and `App.vue`):
+**`trigger`**
 
-  | Trigger | When it runs |
-  |--------|----------------|
-  | `onStart` | Once when the app mounts (`App.vue`), and again after **Restart** if configured |
-  | `component` | When a child fires `run-process` (e.g. **Calculate** on `NumberInput`). For `confirmationSource: "process"`, **Confirm** stays disabled until this run succeeds and returns a `result`. |
-  | `stepOpen` | When the step’s submenu opens |
-  | `mapClick` | When `mapStore.activeRegion` is set while the step is open |
-  | `stepComplete` | When the step completes without a process/map/process confirm path (payload from children) |
+| Trigger | When it runs |
+|--------|----------------|
+| `onStart` | App mount / Restart (`App.vue`) |
+| `component` | Child emits `run-process` (`NumberInput`, `ProcessRunButton`, …) |
+| `stepOpen` | Submenu opens |
+| `mapClick` | Region selected while step is open |
+| `stepComplete` | Step completes (payload from children) |
 
-- **`inputs`**: each `source` is resolved by `resolve-input.js`:
-  - `store:app...` / `store:map...` — Pinia store paths
-  - `payload:...` — payload from the child `step-complete` / calculator (e.g. `value`, `archetype`)
-  - `processResult:...` — nested under `appStore.processResults`
-  - `static:value` — literal string after the first `:`
-- **`storeResultAs`**: saves the parsed execute response on the app store for later steps.
-- **`outputActions`**: handled in `handle-output.js`. Supported `action` values include **`storeValue`**, **`addLayer`** (reads layer entries from the response; expects objects with `layer` and `url`), and **`removeLayer`**.
+**Input `source` prefixes** (`resolve-input.js`):
 
-Process IDs and input names must match your **backend** (see [LARE](https://github.com/DesirMED/LARE)).
+| Prefix | Resolves from |
+|--------|----------------|
+| `store:app.…` / `store:map.…` | Pinia stores |
+| `payload:…` | Event payload (e.g. calculator value) |
+| `processResult:…` | `app.processResults` |
+| `static:…` | Literal after the first `:` |
 
-### Components you can reference in `workflow.json`
+Selection objects shaped like `{ id, … }` are sent to the server as the scalar **`id`**.
 
-| Component name | Typical use |
-|----------------|-------------|
-| `SelectionList` | Dropdown(s) with optional map layers per option; supports `condition`, `flashWhenEnabled`, `disabledUntilCondition` |
-| `LayerList` | Toggle WMS layers; `conditionSource` can show different layers per use case; `flashWhenEnabled` on a layer ties into feature properties hint |
-| `NumberInput` | Numeric field; can gate confirm until valid |
-| `ActiveFeatureProperties` | Usually embedded via `LayerList` / map context to show clicked feature attributes |
+**`outputActions`**
 
-Behaviour is implemented in the matching `.vue` files under `src/components/`. Steps reference components by **file name without `.vue`**; `SubMenu` loads them with `import.meta.glob('@/components/*.vue')`, so new wizard blocks are usually **new JSON + optional new component**, not router changes.
+| `action` | Effect |
+|----------|--------|
+| `storeValue` | Save a path from the response into `processResults` (`storeAs`) |
+| `addLayer` | Add dynamic WMS layers from response entries with `layer` + `url` |
+| `removeLayer` | Remove layers from a **previous** result (`fromResultKey`); uses a snapshot when `storeResultAs` overwrites the same key |
 
----
-
-## Map and GeoServer layers (`base-layers-config.json`)
-
-Defines **default layers** (URLs, types, opacity, legends). Workflow `LayerList` entries reference **layer ids** that should exist in this config (or match how your store builds layer names).
-
-If the browser cannot reach the same hostnames as the backend, set **`VITE_GEOSERVER_PUBLIC_BASE_URL`** so WMS requests use a public base URL while keeping internal URLs in JSON for server-side tools.
+Request path: `{baseUrl}/processes/{identifier}/execution?f=json`.
 
 ---
 
-## Backend integration (OGC API Processes)
+## Components you can put in a step
 
-The client sends **JSON** execute requests (not XML WPS). Ensure your server exposes processes compatible with the **`identifier`** and **`inputs`** in `workflow.json`.
+Reference by **file name without `.vue`**. Unknown names are skipped.
 
-- Default request path pattern: `{baseUrl}/processes/{identifier}/execution?f=json`
-- Implementation: `src/lib/ogc-process/index.js` and `execute-config.js`
+| Component | Typical use |
+|-----------|-------------|
+| `SelectionList` | Dropdown → `app.selections[selectionKey]`. Options may carry extra fields for processes/layers. Supports `condition` / `conditionSource`, `disabledUntilCondition`, `confirmSelection`, `flashWhenEnabled` |
+| `LayerList` | Layer switches. Per layer: `id`, `name`, `active`, `clickable`, `condition`, `propertiesBox`, `flashWhenEnabled`, plus optional `attributeFilter`, `featureInfo`, `relatedGeometry` (see below) |
+| `NumberInput` | Number field; optional Calculate → `run-process`. `defaultValueSource` uses the same `store:` / `processResult:` syntax as processes |
+| `ProcessRunButton` | Explicit run button; `requiredSelections`, `flashWhenEnabled`; emits `run-process` |
+| `ActiveFeatureProperties` | Usually via LayerList `propertiesBox` — compact selected-feature card |
+
+**Shell / map pieces** (not listed in `components[]`; always available as needed):
+
+| Piece | Role |
+|--------|------|
+| `MapComponent` / `MapLayer` / `MapZoomControl` | Map host, per-layer interaction, fit-bounds |
+| `RelatedGeometry` | Driven by LayerList `relatedGeometry` config |
+| `FeatureInfoPanel` | Driven by LayerList `featureInfo` |
+| `LayerLegend` | Floating legend for visible layers |
+| `InfoDialog` | Driven by top-level `infoDialog` |
+| `FlashHighlight` | Used internally for attention pulses |
+
+### LayerList extras (on a layer object)
+
+**`attributeFilter`** — mounts `LayerAttributeFilter` when the layer is visible:
+
+| Prop | Notes |
+|------|--------|
+| `attributeKey` | Required primary attribute |
+| `secondaryAttributeKey` | Optional → hierarchical groups |
+| `delimiter` | Default `";"` for multi-value attributes |
+| `dimOnDeselect` | `false` (hide via filter) \| `"primary"` \| `"all"` (dim paint) |
+| `showCategoryColors`, `wfsUrl`, `defaultCollapse`, `emptySecondaryLabel`, `title` | UX / data loading |
+
+**`featureInfo`** — right-hand panel fields for the selected feature:
+
+```json
+"featureInfo": {
+  "title": "Details",
+  "emptyValue": "—",
+  "fields": [{ "attribute": "naam", "title": "Name" }]
+}
+```
+
+**`relatedGeometry`** — show/filter companion fill/outline layers on select/hover:
+
+| Field | Notes |
+|--------|--------|
+| `layerId` / `outlineLayerId` | Ids from `base-layers-config` |
+| `sourceAttribute` / `targetAttribute` | Join keys (default `fid`) |
+| `fitBounds` | Zoom to related geometry (suppresses default point zoom when true) |
+| `showOnHover` / `showOnHoverWithSelection` | Hover behaviour |
 
 ---
 
-## Deployment notes
+## Map layers (`base-layers-config.json`)
 
-- Set **`VITE_*`** variables in your hosting environment at **build time** (they are baked into the Vite bundle).
-- Use **`VITE_GEOSERVER_PUBLIC_BASE_URL`** (or HTTPS GeoServer URLs in config) so end users’ browsers can load WMS tiles.
-- Serve the SPA with fallback to `index.html` for client-side routes (`/map`, etc.).
+Array of layer service definitions. Workflow LayerList entries should use the same **`id`**.
+
+### Common fields
+
+| Field | Purpose |
+|--------|---------|
+| `id`, `name`, `layer` | App id, label, GeoServer layer name |
+| `url` | WMS or WMTS endpoint |
+| `format` | e.g. `image/png` or `application/vnd.mapbox-vector-tile` |
+| `paint` / `layout` | Mapbox style properties |
+| `vectorType` | `fill` \| `line` \| `circle` (vector tiles) |
+| `promoteId` | Feature id property (needed for click / feature-state) |
+| `bbox`, `minZoom`, `maxZoom` | Optional tile bounds / zoom |
+| `mapServiceVersion` | WMS version if needed |
+
+**Two entries with the same `id`** (one raster, one MVT) → app builds a visible raster (`id_raster`) plus a clickable vector layer.
+
+### Legend-related fields
+
+| Field | Purpose |
+|--------|---------|
+| `showInLegend` | `false` hides from floating legend |
+| `legendMode` | `"categories"` → swatch legend from `categoryStyle` / WFS |
+| `legendLayout` | `"dense"` for wide GetLegendGraphic images |
+| `legendCardMaxWidth`, `legendBodyMaxHeight`, `legendExpanded` | Card UX |
+| `legendOptions` | Passed into GeoServer `legend_options` (fontSize, columns, dpi, …) |
+| `categoryStyle` | Colors, radius, stroke, dimmed styles for circle categories |
+
+If the browser cannot reach hostnames in JSON (Docker), set **`VITE_GEOSERVER_PUBLIC_BASE_URL`**.
+
+---
+
+## Map defaults (`constant.js`)
+
+| Export | Role |
+|--------|------|
+| `MAP_CENTER` | `[longitude, latitude]` |
+| `MAP_ZOOM` | Initial zoom |
+| `MAP_BASELAYERS` / `MAP_BASELAYER_DEFAULT` | Mapbox style list |
+
+Change these per deployment (not via `workflow.json` today).
+
+---
+
+## Common sources of confusion
+
+1. **Two configs, one id** — `base-layers-config` = *how to draw*; `workflow` LayerList = *when visible / clickable / filters / info*. Same `id` links them.
+2. **Clickable only for the active step** — `clickable: true` is registered per step. Clicks work when that step’s submenu is open.
+3. **Component name = filename** — `"SelectionList"` loads `SelectionList.vue`. Typos fail silently (component missing).
+4. **Confirm stays disabled** — Check `requiredSelections`, `confirmationSource`, map click, or whether a `component`-triggered process returned a result.
+5. **`removeLayer` + same `storeResultAs` key** — Previous result is snapshotted before overwrite so old dynamic layers can be removed. Prefer explicit `fromResultKey` over relying on “clear everything”.
+6. **Global panels vs step components** — `FeatureInfoPanel` / `InfoDialog` / `RelatedGeometry` are not added to `components[]`; they react to config on layers / top-level workflow.
+7. **Selection objects vs process scalars** — UI may store `{ id, name, … }`; process inputs coerce to `id`.
+8. **Env at build time** — `VITE_*` values are baked in at `npm run build`; changing the server env later without rebuilding does nothing.
+
+---
+
+## Deployment
+
+- Set `VITE_*` in the environment used for **build**.
+- Ensure GeoServer / tile URLs are reachable from end-user browsers (or use `VITE_GEOSERVER_PUBLIC_BASE_URL`).
+- Host `dist/` as an SPA (fallback to `index.html`).
 
 ---
 
 ## Troubleshooting
 
-| Issue | Things to check |
-|--------|------------------|
-| Map is blank | `VITE_MAPBOX_TOKEN`; browser console for Mapbox errors |
-| Processes fail immediately | `VITE_OGC_API_URL` / server reachable from **your machine**; process id spelling; CORS on the API |
-| Layers do not load | GeoServer URL reachable from the **browser**; `VITE_GEOSERVER_PUBLIC_BASE_URL`; layer workspace/name matches GeoServer |
-| Confirm stays disabled | `requiredSelections`, `confirmationSource`, and whether a prior step stored `processResult` / map region as expected |
+| Issue | Check |
+|--------|--------|
+| Blank map | `VITE_MAPBOX_TOKEN`; browser console |
+| Processes fail | `VITE_OGC_API_URL`; process id; CORS; network tab |
+| Layers missing | Browser-reachable GeoServer URL; layer name; `id` match between configs |
+| Legend empty | `showInLegend`; WMS GetLegendGraphic; or `legendMode: "categories"` + WFS |
+| Filter / dim not working | `attributeFilter` + vector layer; `promoteId`; `categoryStyle` where needed |
+| Feature info never opens | Layer has `featureInfo` and is clickable for the active step |
+| Info dialog never shows | `infoDialog.enabled`; `showOnStart` / button; `remember` + `storageKey` |
 
 ---
 
 ## Contributing
 
-Issues and pull requests are welcome. Run **`npm run lint`** before submitting changes.
+Issues and pull requests are welcome. Run **`npm run lint`** (or at least eslint on `src/`) before submitting.
+
+When adding a shared feature, prefer **opt-in config** so existing products keep working without JSON changes.
 
 ---
 
 ## Acknowledgments
 
 - [Vue.js](https://vuejs.org/), [Vite](https://vitejs.dev/), [Vuetify](https://vuetifyjs.com/), [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
-- [Studio Meta](https://github.com/studiometa) for [`@studiometa/vue-mapbox-gl`](https://github.com/studiometa/vue-mapbox-gl), used for Vue 3 + Mapbox GL integration
-- [LARE](https://github.com/DesirMED/LARE) — backend / pygeoapi processes
+- [Studio Meta](https://github.com/studiometa) — [`@studiometa/vue-mapbox-gl`](https://github.com/studiometa/vue-mapbox-gl)
+- Sibling deployments share this viewer core: [lare-viewer](https://github.com/openearth/lare-viewer), [NL2120-viewer](https://github.com/openearth/NL2120-viewer)
+- [LARE](https://github.com/DesirMED/LARE) — example OGC API Processes backend

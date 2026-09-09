@@ -9,8 +9,8 @@
         <v-list-item class="d-flex justify-center align-center pa-5">
           <v-img
             :src="config.logo"
-            alt="DesirMED Logo"
-            width="140px"
+            :alt="config.logoAlt || 'Logo'"
+            :width="config.logoWidth || '80px'"
           />
         </v-list-item>
         <v-list-item
@@ -24,10 +24,20 @@
       </div>
 
       <div
-        v-if="showRestart"
-        class="restart-wrapper"
+        v-if="showInfoButton || showRestart"
+        class="drawer-footer"
       >
         <v-btn
+          v-if="showInfoButton"
+          class="info-button"
+          icon="mdi-information-slab-circle-outline"
+          variant="text"
+          size="large"
+          aria-label="Informatie"
+          @click="store.openInfoDialog"
+        />
+        <v-btn
+          v-if="showRestart"
           color="primary"
           variant="tonal"
           block
@@ -78,6 +88,9 @@
     if (!restartEnabled.value) return false
     if (!firstStep.value) return false
     return store.isStepCompleted(firstStep.value.id)
+  })
+  const showInfoButton = computed(() => {
+    return config.infoDialog?.enabled === true && config.infoDialog?.showButton === true
   })
 
   function handleStepClick (step) {
@@ -136,8 +149,16 @@
   justify-content: space-between;
 }
 
-.restart-wrapper {
-  padding: 10px 12px 14px;
+.drawer-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px 6px;
+}
+
+.info-button {
+  margin-left: -4px;
 }
 
 .step-locked {
