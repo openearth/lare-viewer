@@ -12,8 +12,10 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ActiveFeatureProperties: typeof import('./src/components/ActiveFeatureProperties.vue')['default']
-    AreaMenu: typeof import('./src/components/AreaMenu.vue')['default']
+    FeatureInfoPanel: typeof import('./src/components/FeatureInfoPanel.vue')['default']
     FlashHighlight: typeof import('./src/components/FlashHighlight.vue')['default']
+    InfoDialog: typeof import('./src/components/InfoDialog.vue')['default']
+    LayerAttributeFilter: typeof import('./src/components/LayerAttributeFilter.vue')['default']
     LayerLegend: typeof import('./src/components/LayerLegend.vue')['default']
     LayerList: typeof import('./src/components/LayerList.vue')['default']
     MapComponent: typeof import('./src/components/MapComponent.vue')['default']
@@ -22,6 +24,7 @@ declare module 'vue' {
     NavigationDrawer: typeof import('./src/components/NavigationDrawer.vue')['default']
     NumberInput: typeof import('./src/components/NumberInput.vue')['default']
     ProcessRunButton: typeof import('./src/components/ProcessRunButton.vue')['default']
+    RelatedGeometry: typeof import('./src/components/RelatedGeometry.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectionList: typeof import('./src/components/SelectionList.vue')['default']

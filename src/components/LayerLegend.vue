@@ -14,7 +14,7 @@
         icon="mdi-map-legend"
         size="large"
         elevation="4"
-        @click="showLegend = !showLegend"
+        @click="toggleLegend"
       />
     </v-badge>
 
@@ -22,11 +22,13 @@
       <div
         v-show="showLegend"
         class="legend-panel"
+        :class="`legend-panel--${legendStack}`"
       >
         <v-card
           v-for="layer in visibleLayers"
           :key="layer.id"
-          class="legend-item-card mb-2"
+          class="legend-item-card"
+          :class="{ 'mb-2': legendStack === 'vertical' }"
           elevation="2"
           rounded="xl"
           :max-width="layer.legendCardMaxWidth ?? LEGEND_UI_DEFAULTS.cardMaxWidth"
@@ -49,12 +51,35 @@
           <v-expand-transition>
             <v-card-text
               v-show="isLayerExpanded(layer.id)"
-              class="pa-3 pt-2 legend-card-body"
+              class="pa-3 pt-2 legend-item-body legend-card-body"
               :class="{ 'legend-card-body--dense': isDenseLegendLayout(layer) }"
               :style="legendBodyStyle(layer)"
             >
+              <div
+                v-if="layer.legendMode === 'categories'"
+                class="legend-categories"
+              >
+                <div
+                  v-for="row in getCategoryRows(layer.id)"
+                  :key="row.value"
+                  class="legend-category-row"
+                  :class="{ 'legend-category-row--dimmed': row.dimmed }"
+                >
+                  <span
+                    class="legend-category-swatch"
+                    :style="{ backgroundColor: row.color }"
+                  />
+                  <span class="legend-category-label">{{ row.value }}</span>
+                </div>
+                <div
+                  v-if="getCategoryRows(layer.id).length === 0"
+                  class="text-caption text-medium-emphasis"
+                >
+                  Loading…
+                </div>
+              </div>
               <img
-                v-if="!failedImageIds.has(layer.id)"
+                v-else-if="!failedImageIds.has(layer.id)"
                 class="legend-image"
                 :src="buildLegendUrl(layer)"
                 :alt="`${ getLayerName(layer.id) } legend`"
@@ -73,6 +98,7 @@
   import { computed, ref, watch } from 'vue'
   import { useMapStore } from '@/stores/map'
   import buildLegendUrl from '@/lib/build-legend-url'
+  import { findWorkflowLayer } from '@/lib/find-workflow-layer'
   import { isDenseLegendLayout, LEGEND_UI_DEFAULTS } from '@/lib/legend-config'
   import navigationConfig from '@/config/workflow.json'
 
@@ -81,65 +107,75 @@
   const showLegend = ref(true)
   const expandedLayers = ref(new Set())
 
+  const legendStack = computed(() => {
+    return navigationConfig.legendStack === 'horizontal' ? 'horizontal' : 'vertical'
+  })
+
   const visibleLayers = computed(() => mapStore.visibleLayersWithConfig)
   const hasVisibleLayers = computed(() => visibleLayers.value.length > 0)
 
-  function expandLayerIfConfigured (layer) {
+  function expandLayerIfConfigured (layer, targetSet) {
     if (layer.legendExpanded !== false) {
-      expandedLayers.value.add(layer.id)
+      targetSet.add(layer.id)
     }
   }
 
-  watch(hasVisibleLayers, (visible) => {
-    if (!visible) return
+  watch(hasVisibleLayers, (newValue) => {
+    if (!newValue) return
     showLegend.value = true
-    visibleLayers.value.forEach(expandLayerIfConfigured)
+    const next = new Set(expandedLayers.value)
+    visibleLayers.value.forEach(layer => expandLayerIfConfigured(layer, next))
+    expandedLayers.value = next
   })
 
   watch(visibleLayers, (newLayers, oldLayers) => {
+    const next = new Set(expandedLayers.value)
     const oldIds = new Set(oldLayers?.map(l => l.id) || [])
     newLayers.forEach(layer => {
       if (!oldIds.has(layer.id)) {
-        expandLayerIfConfigured(layer)
+        expandLayerIfConfigured(layer, next)
+      }
+      if (layer.legendMode === 'categories') {
+        mapStore.ensureLayerCategories(layer.id)
       }
     })
     const newIds = new Set(newLayers.map(l => l.id))
-    expandedLayers.value.forEach(id => {
+    next.forEach(id => {
       if (!newIds.has(id)) {
-        expandedLayers.value.delete(id)
+        next.delete(id)
       }
     })
-  })
-
-  function getLayerNameFromNavigation (layerId) {
-    for (const step of navigationConfig.steps) {
-      if (!step.components) continue
-      for (const component of step.components) {
-        if (component.component !== 'LayerList' || !component.componentProps?.layers) continue
-        const layer = component.componentProps.layers.find(l => l.id === layerId)
-        if (layer) return layer.name
-      }
-    }
-    return null
-  }
+    expandedLayers.value = next
+  }, { immediate: true })
 
   function getLayerName (layerId) {
-    return getLayerNameFromNavigation(layerId)
-      ?? visibleLayers.value.find(l => l.id === layerId)?.name
-      ?? layerId
+    return findWorkflowLayer(layerId)?.name
+      || visibleLayers.value.find(l => l.id === layerId)?.name
+      || layerId
+  }
+
+  function getCategoryRows (layerId) {
+    return mapStore.getLayerCategoryRows(layerId)
   }
 
   function legendBodyStyle (layer) {
+    if (layer.legendMode === 'categories') return undefined
     const maxHeight = layer.legendBodyMaxHeight ?? LEGEND_UI_DEFAULTS.bodyMaxHeight
     return { maxHeight: `${ maxHeight }px` }
   }
 
+  function toggleLegend () {
+    showLegend.value = !showLegend.value
+  }
+
   function toggleLayerLegend (layerId) {
-    if (expandedLayers.value.has(layerId)) {
-      expandedLayers.value.delete(layerId)
+    const next = new Set(expandedLayers.value)
+    if (next.has(layerId)) {
+      next.delete(layerId)
     } else {
-      expandedLayers.value.add(layerId)
+      next.add(layerId)
     }
+    expandedLayers.value = next
   }
 
   function isLayerExpanded (layerId) {
@@ -147,7 +183,9 @@
   }
 
   function onImageError (layerId) {
-    failedImageIds.value.add(layerId)
+    const next = new Set(failedImageIds.value)
+    next.add(layerId)
+    failedImageIds.value = next
   }
 </script>
 
@@ -164,10 +202,41 @@
 }
 
 .legend-panel {
+  display: flex;
+  align-items: flex-end;
+  /* Padding keeps elevation shadows inside the overflow box (otherwise they look cropped) */
+  padding: 8px;
+  margin: -8px;
+}
+
+.legend-panel--vertical {
+  flex-direction: column;
   max-height: calc(100vh - 200px);
+  overflow-x: hidden;
   overflow-y: auto;
+}
+
+.legend-panel--horizontal {
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  gap: 12px;
+  max-width: calc(100vw - 120px);
+  max-height: min(45vh, 360px);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.legend-panel--horizontal .legend-item-card {
+  flex: 0 0 auto;
+  max-height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.legend-panel--horizontal .legend-item-body {
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .legend-item-card__header {
@@ -203,5 +272,34 @@
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+.legend-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-category-row--dimmed .legend-category-label {
+  opacity: 0.45;
+}
+
+.legend-category-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.legend-category-label {
+  font-size: 0.8125rem;
+  line-height: 1.2;
 }
 </style>
