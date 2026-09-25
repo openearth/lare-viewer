@@ -10,6 +10,7 @@
       "storeResultAs": "initialSetup"
     }
   },
+  "legendStack": "horizontal",
   "steps": [
     {
       "id": "userCaseSelection",
@@ -60,6 +61,7 @@
       "explanation": "Select a region on the map by clicking it, then confirm to continue.",
       "requiresConfirmation": true,
       "confirmationSource": "mapClick",
+      "commitSelectionOnConfirm": true,
       "components": [
         {
           "component": "LayerList",
@@ -107,6 +109,9 @@
       "explanation": "Choose a landscape archetype and confirm, then enter the hexagon size, click the calculator to run the UOM calculation, then confirm to continue.",
       "requiresConfirmation": true,
       "confirmationSource": "process",
+      "committedSelectionOutline": {
+        "fromHere": true
+      },
       "process": {
         "identifier": "lare-uom",
         "trigger": "component",
@@ -136,7 +141,8 @@
         "outputActions": [
           {
             "action": "addLayer",
-            "path": "response"
+            "path": "response",
+            "layerId": "uomGrid"
           }
         ]
       },
@@ -190,7 +196,7 @@
       "requiredSteps": [
         "uom"
       ],
-      "explanation": "Select hazard and KCS, then click Calculate KCS risk. When the risk layer appears on the map, confirm to finish.",
+      "explanation": "Select hazard and KCS, then click Calculate KCS risk. When the risk layer appears on the map, confirm to continue to the NbS overview.",
       "requiresConfirmation": true,
       "confirmationSource": "process",
       "requiredSelections": [
@@ -222,12 +228,12 @@
         "outputActions": [
           {
             "action": "removeLayer",
-            "fromResultKey": "uomKcs",
-            "path": "response"
+            "layerId": "kcsRisk"
           },
           {
             "action": "addLayer",
-            "path": "response"
+            "path": "response",
+            "layerId": "kcsRisk"
           }
         ]
       },
@@ -304,6 +310,160 @@
               "kcsSelection"
             ],
             "flashWhenEnabled": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "nbsOverview",
+      "title": "NbS Overview",
+      "drawerTitle": "Nature-based solutions overview",
+      "disabledOnContinue": false,
+      "requiredSteps": [
+        "kcsSelection"
+      ],
+      "explanation": "Hexagons are coloured by their most represented applicable NbS. Click a hexagon for details. Toggle Risk or land cover for context.",
+      "requiresConfirmation": false,
+      "onOpen": [
+        {
+          "action": "setLayerVisibility",
+          "layerId": "kcsRisk",
+          "visible": false,
+          "once": true
+        },
+        {
+          "action": "setLayerVisibility",
+          "layerId": "uomGrid",
+          "visible": false,
+          "once": true
+        }
+      ],
+      "process": {
+        "identifier": "lare-nbs",
+        "trigger": "stepOpen",
+        "rerun": "onInputChange",
+        "loadingText": "Calculating the NbS overview…",
+        "errorText": "The NbS overview could not be calculated.",
+        "inputs": [
+          {
+            "id": "session_id",
+            "source": "store:app.processResults.initialSetup.session_id"
+          },
+          {
+            "id": "archetype",
+            "source": "store:app.selections.uomArchetype"
+          },
+          {
+            "id": "hazard",
+            "source": "store:app.selections.hazardSelection"
+          }
+        ],
+        "storeResultAs": "nbs",
+        "outputActions": [
+          {
+            "action": "addLayer",
+            "path": "response",
+            "layerId": "nbsOverview"
+          }
+        ]
+      },
+      "components": [
+        {
+          "component": "LayerList",
+          "componentProps": {
+            "layers": [
+              {
+                "id": "landuse:U2018_CLC2018_V2020_20u1_cog",
+                "name": "European Land Use Cover",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "kcsRisk",
+                "name": "Risk",
+                "active": false,
+                "clickable": false
+              },
+              {
+                "id": "nbsOverview",
+                "name": "NbS Overview",
+                "active": true,
+                "clickable": true,
+                "fitBoundsOnSelect": false,
+                "featureInfo": {
+                  "title": "NbS in this hexagon",
+                  "emptyValue": "—",
+                  "sections": [
+                    {
+                      "type": "fields",
+                      "fields": [
+                        {
+                          "attribute": "nbs_list_majority",
+                          "title": "Most represented NbS (map colour)",
+                          "format": {
+                            "type": "list",
+                            "delimiter": ";",
+                            "join": ", "
+                          },
+                          "categorySwatch": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "table",
+                      "title": "Top 5 land-cover classes and their NbS",
+                      "repeat": {
+                        "from": 1,
+                        "to": 5,
+                        "token": "n"
+                      },
+                      "hideRowWhenEmpty": [
+                        "clc_rank_area_{n}"
+                      ],
+                      "columns": [
+                        {
+                          "title": "Land cover",
+                          "attribute": "clc_rank_{n}",
+                          "format": {
+                            "type": "lookup",
+                            "lookup": "clc"
+                          }
+                        },
+                        {
+                          "title": "NbS",
+                          "attribute": "nbs_list_{n}",
+                          "format": {
+                            "type": "list",
+                            "delimiter": ";",
+                            "join": ", "
+                          }
+                        },
+                        {
+                          "title": "Total area",
+                          "attribute": "clc_rank_area_{n}",
+                          "format": {
+                            "type": "number",
+                            "scale": 0.0001,
+                            "decimals": 1,
+                            "unit": "ha"
+                          }
+                        },
+                        {
+                          "title": "% area",
+                          "attribute": "clc_rank_pct_{n}",
+                          "format": {
+                            "type": "number",
+                            "decimals": 1,
+                            "unit": "%"
+                          },
+                          "hideWhenMissing": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       ]

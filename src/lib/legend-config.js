@@ -5,6 +5,7 @@ export const LAYER_LEGEND_FIELDS = [
   'legendCardMaxWidth',
   'legendBodyMaxHeight',
   'legendExpanded',
+  'legendSwatch',
 ]
 
 export const LEGEND_UI_DEFAULTS = {

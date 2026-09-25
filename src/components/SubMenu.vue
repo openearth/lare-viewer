@@ -22,6 +22,38 @@
       </v-list-item>
 
       <div class="sub-menu-drawer__content">
+        <div
+          v-if="processStatus === 'loading'"
+          class="sub-menu-drawer__status pa-4"
+        >
+          <div class="d-flex align-center ga-3 mb-2">
+            <v-progress-circular
+              indeterminate
+              size="22"
+              width="2"
+              color="primary"
+            />
+            <span class="text-body-2">{{ loadingText }}</span>
+          </div>
+        </div>
+        <div
+          v-else-if="processStatus === 'error'"
+          class="sub-menu-drawer__status pa-4"
+        >
+          <p class="text-body-2 text-error mb-3">
+            {{ errorText }}
+          </p>
+          <v-btn
+            color="primary"
+            variant="tonal"
+            size="small"
+            block
+            @click="retryStepOpenProcess"
+          >
+            Retry
+          </v-btn>
+        </div>
+
         <component
           :is="comp.component"
           v-for="(comp, index) in validComponents"
@@ -70,6 +102,7 @@
   import { useAppStore } from '@/stores/app'
   import { useMapStore } from '@/stores/map'
   import { executeProcessConfig } from '@/lib/ogc-process/execute-config'
+  import { resolveInputs } from '@/lib/ogc-process/resolve-input'
   import { isSelectionMissing } from '@/lib/selection-utils'
   import FlashHighlight from '@/components/FlashHighlight.vue'
 
@@ -86,15 +119,32 @@
     /** When set, footer Confirm stays disabled until each key has a value in appStore.selections. */
     requiredSelections: { type: Array, default: () => [] },
     process: { type: Object, default: null },
+    /** Step lifecycle actions, e.g. setLayerVisibility when the submenu opens. */
+    onOpen: { type: Array, default: () => [] },
+    /**
+     * When true, Confirm persists the current map selection as committedSelection
+     * (durable outline; independent of later feature inspection).
+     */
+    commitSelectionOnConfirm: { type: Boolean, default: false },
   })
 
   const store = useAppStore()
   const mapStore = useMapStore()
   const loadedComponents = shallowRef([])
   const stepReadyPayload = shallowRef(null)
+  const processStatus = shallowRef(null) // null | 'loading' | 'error' | 'success'
+  const lastStepOpenSignature = shallowRef(null)
+  const onOpenRanOnce = shallowRef(false)
   provide('stepId', props.menuId)
 
   const modules = import.meta.glob('@/components/*.vue')
+
+  const loadingText = computed(() =>
+    props.process?.loadingText || 'Running analysis…',
+  )
+  const errorText = computed(() =>
+    props.process?.errorText || 'The process could not be completed.',
+  )
 
   const loadComponents = async () => {
     const loaded = []
@@ -156,24 +206,92 @@
     },
   })
 
+  function applyOnOpenActions () {
+    if (!Array.isArray(props.onOpen) || props.onOpen.length === 0) return
+    for (const action of props.onOpen) {
+      if (!action || action.action !== 'setLayerVisibility') continue
+      if (action.once && onOpenRanOnce.value) continue
+      if (!action.layerId) continue
+      mapStore.setLayerVisibility(action.layerId, action.visible === true)
+    }
+    onOpenRanOnce.value = true
+  }
+
+  function processInputSignature () {
+    if (!props.process?.inputs?.length) return 'no-inputs'
+    const resolved = resolveInputs(props.process.inputs, {
+      payload: {},
+      stores: { app: store, map: mapStore },
+    })
+    return JSON.stringify(resolved.map(({ id, value }) => [ id, value ]))
+  }
+
+  async function runStepOpenProcess ({ force = false } = {}) {
+    if (!props.process || props.process.trigger !== 'stepOpen') return
+
+    const rerun = props.process.rerun || 'always'
+    const signature = processInputSignature()
+    if (
+      !force
+      && rerun === 'onInputChange'
+      && lastStepOpenSignature.value === signature
+      && processStatus.value === 'success'
+    ) {
+      return
+    }
+
+    processStatus.value = 'loading'
+    try {
+      const result = await executeProcessOnly({})
+      lastStepOpenSignature.value = signature
+      processStatus.value = 'success'
+      if (props.requiresConfirmation && props.confirmationSource === 'process') {
+        stepReadyPayload.value = result != null ? { result } : {}
+      } else if (!props.requiresConfirmation) {
+        // Auto-complete optional exploratory steps when the process succeeds
+        if (props.completionEvent === 'auto') {
+          completeStep()
+        }
+      }
+    } catch (error) {
+      processStatus.value = 'error'
+      console.error(`Process request failed for step "${ props.menuId }" (stepOpen):`, error)
+    }
+  }
+
+  function retryStepOpenProcess () {
+    runStepOpenProcess({ force: true })
+  }
+
   // --- Step completion (independent of WPS) ---
 
   watch(isOpen, async (open) => {
     if (open) {
       stepReadyPayload.value = null
+      applyOnOpenActions()
     }
     if (open && props.completionEvent === 'auto' && !store.isStepCompleted(props.menuId)) {
-      completeStep()
-    }
-    if (open && props.confirmationSource === 'process' && props.process?.trigger === 'stepOpen') {
-      try {
-        const result = await executeProcessOnly({})
-        stepReadyPayload.value = result != null ? { result } : {}
-      } catch (error) {
-        console.error(`Process request failed for step "${ props.menuId }" (stepOpen):`, error)
+      // Defer auto-complete when a stepOpen process owns readiness
+      if (!(props.process?.trigger === 'stepOpen')) {
+        completeStep()
       }
     }
+    if (open && props.process?.trigger === 'stepOpen') {
+      await runStepOpenProcess()
+    }
   })
+
+  // After Restart, allow onOpen actions and stepOpen process to run again
+  watch(
+    () => store.completedSteps.length,
+    (len, prevLen) => {
+      if (prevLen > 0 && len === 0) {
+        onOpenRanOnce.value = false
+        lastStepOpenSignature.value = null
+        processStatus.value = null
+      }
+    },
+  )
 
   if (props.confirmationSource === 'mapClick') {
     watch([isOpen, () => mapStore.activeRegion], ([open, region]) => {
@@ -255,6 +373,11 @@
     if (props.requiresConfirmation && !stepReadyPayload.value) return
     const payload = stepReadyPayload.value || {}
     stepReadyPayload.value = null
+
+    if (props.commitSelectionOnConfirm) {
+      mapStore.commitSelectionFromActive()
+    }
+
     if (props.confirmationSource === 'process' || props.confirmationSource === 'mapClick') {
       completeStep()
       store.openNextStep(props.menuId)
@@ -310,5 +433,9 @@
 .drawer-title {
   white-space: normal;
   margin-top: 10px;
+}
+
+.sub-menu-drawer__status {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 </style>

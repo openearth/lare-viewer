@@ -61,15 +61,16 @@
               >
                 <div
                   v-for="row in getCategoryRows(layer.id)"
-                  :key="row.value"
+                  :key="row.value === '' ? '__empty__' : row.value"
                   class="legend-category-row"
                   :class="{ 'legend-category-row--dimmed': row.dimmed }"
                 >
                   <span
                     class="legend-category-swatch"
+                    :class="{ 'legend-category-swatch--square': layer.legendSwatch === 'square' || isFillLegend(layer) }"
                     :style="{ backgroundColor: row.color }"
                   />
-                  <span class="legend-category-label">{{ row.value }}</span>
+                  <span class="legend-category-label">{{ row.label || row.value }}</span>
                 </div>
                 <div
                   v-if="getCategoryRows(layer.id).length === 0"
@@ -156,6 +157,11 @@
 
   function getCategoryRows (layerId) {
     return mapStore.getLayerCategoryRows(layerId)
+  }
+
+  function isFillLegend (layer) {
+    const cfg = mapStore.layersConfig.find(c => c.id === layer.id)
+    return cfg?.vectorType === 'fill' || cfg?.categoryStyle?.geometry === 'fill'
   }
 
   function legendBodyStyle (layer) {
@@ -296,6 +302,10 @@
   border-radius: 50%;
   flex-shrink: 0;
   border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.legend-category-swatch--square {
+  border-radius: 2px;
 }
 
 .legend-category-label {

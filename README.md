@@ -90,6 +90,7 @@ src/
 ├── config/
 │   ├── workflow.json              # Product UI + processes
 │   ├── base-layers-config.json    # Layer service definitions
+│   ├── lookups/                   # Optional attribute lookup tables (e.g. clc.json)
 │   └── info-dialog.md             # Optional; used if infoDialog.contentFile points here
 ├── components/                    # Wizard + map UI (name = workflow component id)
 ├── stores/
@@ -97,6 +98,7 @@ src/
 │   └── map.js                     # Layers, visibility, filters, region, hover
 ├── lib/
 │   ├── ogc-process/               # Execute + resolve inputs + output actions
+│   ├── format-value.js            # FeatureInfo formatting (list / number / lookup)
 │   ├── constant.js                # MAP_CENTER, MAP_ZOOM, basemap styles
 │   └── …                          # Layer builders, legend, category-style, helpers
 ├── views/Home.vue
@@ -130,6 +132,45 @@ With `steps: []`, the drawer has no wizard items and nothing auto-opens. Useful 
 ---
 
 ## Configuring `workflow.json`
+
+Top-level and per-step fields drive the wizard. Steps are listed in order; many behaviours are **opt-in** flags so other deployments stay unchanged.
+
+### Persisted map selection (committed outline)
+
+Generic feature for any clickable vector layer — not tied to “regions”.
+
+| Config | Where | Effect |
+|--------|--------|--------|
+| `commitSelectionOnConfirm: true` | Step that confirms a map click | On Confirm, stores `committedSelection` from the current map feature |
+| `committedSelectionOutline.fromHere: true` | Step where the durable outline should **start** | Outline shows on this step and **all following** steps (by `steps` order), until Restart |
+| `selectionStyle.outline` | Vector entry in `base-layers-config.json` | Stroke look; uses feature-state `committed` (does not conflict with interactive yellow `selected` fill) |
+
+Example:
+
+```json
+{
+  "id": "regionSelection",
+  "commitSelectionOnConfirm": true,
+  "confirmationSource": "mapClick"
+}
+```
+
+```json
+{
+  "id": "uom",
+  "committedSelectionOutline": { "fromHere": true }
+}
+```
+
+```json
+"selectionStyle": {
+  "outline": {
+    "selected": { "strokeColor": "#e53935", "strokeWidth": 4 }
+  }
+}
+```
+
+Omit these keys → no committed outline (other products unchanged). Interactive yellow fill remains step-scoped via `clickable` + layer `paint` / `feature-state` `selected`.
 
 ### Top-level fields
 
@@ -229,6 +270,21 @@ Only active when `enabled: true`. Markdown file must live under `src/config/` (l
 | `mapClick` | Region selected while step is open |
 | `stepComplete` | Step completes (payload from children) |
 
+Optional process fields for `stepOpen`:
+
+| Field | Purpose |
+|--------|---------|
+| `rerun` | `"always"` (default) or `"onInputChange"` — skip re-execute when inputs are unchanged and the last run succeeded |
+| `loadingText` / `errorText` | Status UI in the submenu while the process runs |
+
+**Step `onOpen`** — optional actions when the submenu opens (e.g. hide prior layers once):
+
+```json
+"onOpen": [
+  { "action": "setLayerVisibility", "layerId": "kcsRisk", "visible": false, "once": true }
+]
+```
+
 **Input `source` prefixes** (`resolve-input.js`):
 
 | Prefix | Resolves from |
@@ -245,8 +301,10 @@ Selection objects shaped like `{ id, … }` are sent to the server as the scalar
 | `action` | Effect |
 |----------|--------|
 | `storeValue` | Save a path from the response into `processResults` (`storeAs`) |
-| `addLayer` | Add dynamic WMS layers from response entries with `layer` + `url` |
-| `removeLayer` | Remove layers from a **previous** result (`fromResultKey`); uses a snapshot when `storeResultAs` overwrites the same key |
+| `addLayer` | Fill a **dynamic slot** (`layerId`) or add a legacy ad-hoc WMS layer from response entries with `layer` + `url` |
+| `removeLayer` | Clear a slot by `layerId`, or remove layers from a **previous** result (`fromResultKey`); uses a snapshot when `storeResultAs` overwrites the same key |
+
+Prefer declaring `dynamic: true` placeholders in `base-layers-config.json` and passing `layerId` from `addLayer` so LayerList / legend / styling stay stable across process runs.
 
 Request path: `{baseUrl}/processes/{identifier}/execution?f=json`.
 
@@ -287,7 +345,7 @@ Reference by **file name without `.vue`**. Unknown names are skipped.
 | `dimOnDeselect` | `false` (hide via filter) \| `"primary"` \| `"all"` (dim paint) |
 | `showCategoryColors`, `wfsUrl`, `defaultCollapse`, `emptySecondaryLabel`, `title` | UX / data loading |
 
-**`featureInfo`** — right-hand panel fields for the selected feature:
+**`featureInfo`** — right-hand panel for the selected feature. Supports legacy `fields[]` or structured `sections`:
 
 ```json
 "featureInfo": {
@@ -296,6 +354,39 @@ Reference by **file name without `.vue`**. Unknown names are skipped.
   "fields": [{ "attribute": "naam", "title": "Name" }]
 }
 ```
+
+```json
+"featureInfo": {
+  "title": "NbS in this hexagon",
+  "sections": [
+    {
+      "type": "fields",
+      "fields": [
+        {
+          "attribute": "nbs_list_majority",
+          "title": "Most represented NbS",
+          "format": { "type": "list", "delimiter": ";", "join": ", " },
+          "categorySwatch": true
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top land-cover classes",
+      "repeat": { "from": 1, "to": 5, "token": "n" },
+      "hideRowWhenEmpty": ["clc_rank_area_{n}"],
+      "columns": [
+        { "title": "Land cover", "attribute": "clc_rank_{n}", "format": { "type": "lookup", "lookup": "clc" } },
+        { "title": "NbS", "attribute": "nbs_list_{n}", "format": { "type": "list", "delimiter": ";", "join": ", " } }
+      ]
+    }
+  ]
+}
+```
+
+Value `format` types (`src/lib/format-value.js`): `text`, `list`, `number` (`scale`, `decimals`, `unit`), `lookup` (e.g. `clc` → `src/config/lookups/clc.json`).
+
+Optional LayerList flags: `fitBoundsOnSelect: false` suppresses map zoom when that layer’s feature is selected.
 
 **`relatedGeometry`** — show/filter companion fill/outline layers on select/hover:
 
@@ -319,11 +410,14 @@ Array of layer service definitions. Workflow LayerList entries should use the sa
 | `id`, `name`, `layer` | App id, label, GeoServer layer name |
 | `url` | WMS or WMTS endpoint |
 | `format` | e.g. `image/png` or `application/vnd.mapbox-vector-tile` |
+| `dynamic` | `true` → placeholder slot filled later by process `addLayer` + `layerId` |
 | `paint` / `layout` | Mapbox style properties |
 | `vectorType` | `fill` \| `line` \| `circle` (vector tiles) |
-| `promoteId` | Feature id property (needed for click / feature-state) |
+| `promoteId` | Feature id property (needed for click / feature-state when tiles lack numeric ids) |
 | `bbox`, `minZoom`, `maxZoom` | Optional tile bounds / zoom |
 | `mapServiceVersion` | WMS version if needed |
+
+**Dynamic slots** — declare `{ "id": "nbsOverview", "dynamic": true, "format": "…", … }` without `url`. Process output fills `url` / `layer` while keeping paint, `categoryStyle`, and legend settings. WMS can serve MVT (`application/vnd.mapbox-vector-tile`) for client-side category styling of temporary layers.
 
 **Two entries with the same `id`** (one raster, one MVT) → app builds a visible raster (`id_raster`) plus a clickable vector layer.
 
@@ -333,10 +427,24 @@ Array of layer service definitions. Workflow LayerList entries should use the sa
 |--------|---------|
 | `showInLegend` | `false` hides from floating legend |
 | `legendMode` | `"categories"` → swatch legend from `categoryStyle` / WFS |
+| `legendSwatch` | `"square"` for polygon category legends (default circle) |
 | `legendLayout` | `"dense"` for wide GetLegendGraphic images |
 | `legendCardMaxWidth`, `legendBodyMaxHeight`, `legendExpanded` | Card UX |
 | `legendOptions` | Passed into GeoServer `legend_options` (fontSize, columns, dpi, …) |
-| `categoryStyle` | Colors, radius, stroke, dimmed styles for circle categories |
+| `categoryStyle` | Client-side category colors for circle or fill layers |
+| `selectionStyle` | Optional durable outline for committed selection (`outline.selected`) |
+
+**`categoryStyle` highlights**
+
+| Field | Purpose |
+|--------|---------|
+| `attribute` | Property used for colour |
+| `match` | `"token"` (default, delimited multi-value) or `"exact"` (whole string, including empty) |
+| `delimiter` | For token match / legend label join (default `";"`) |
+| `colors.palette` / `colors.byValue` / `colors.startHue` | Colour assignment |
+| `empty` | `{ label, color, showInLegend }` for blank exact-match values |
+| `fillOpacity`, `outlineColor`, `hover`, `selected` | Fill styling + outline companion |
+| `legend.sort` / `legend.labelJoin` | Legend ordering and multi-value labels |
 
 If the browser cannot reach hostnames in JSON (Docker), set **`VITE_GEOSERVER_PUBLIC_BASE_URL`**.
 

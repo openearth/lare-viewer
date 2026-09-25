@@ -76,7 +76,15 @@
             ]
         },
         "vectorType": "fill",
-        "minZoom": 0
+        "minZoom": 0,
+        "selectionStyle": {
+            "outline": {
+                "selected": {
+                    "strokeColor": "#e53935",
+                    "strokeWidth": 7
+                }
+            }
+        }
     },
     {
         "id": "region:nuts_2021_level_3",
@@ -145,7 +153,15 @@
             ]
         },
         "vectorType": "fill",
-        "minZoom": 0
+        "minZoom": 0,
+        "selectionStyle": {
+            "outline": {
+                "selected": {
+                    "strokeColor": "#e53935",
+                    "strokeWidth": 7
+                }
+            }
+        }
     },
     {
         "id": "topography:hybas_eu_lev12_v1c",
@@ -154,5 +170,66 @@
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "image/png",
         "minZoom": 0
+    },
+    {
+        "id": "uomGrid",
+        "name": "Units of measurement",
+        "dynamic": true,
+        "format": "image/png"
+    },
+    {
+        "id": "kcsRisk",
+        "name": "Risk",
+        "dynamic": true,
+        "format": "image/png"
+    },
+    {
+        "id": "nbsOverview",
+        "name": "NbS Overview",
+        "dynamic": true,
+        "format": "application/vnd.mapbox-vector-tile",
+        "vectorType": "fill",
+        "legendMode": "categories",
+        "legendSwatch": "square",
+        "categoryStyle": {
+            "attribute": "nbs_list_majority",
+            "match": "exact",
+            "delimiter": ";",
+            "colors": {
+                "palette": [
+                    "#1b9e77",
+                    "#d95f02",
+                    "#7570b3",
+                    "#e7298a",
+                    "#66a61e",
+                    "#e6ab02",
+                    "#a6761d",
+                    "#1f78b4",
+                    "#6a3d9a"
+                ],
+                "startHue": "#1e88e5"
+            },
+            "fillOpacity": 0.85,
+            "outlineColor": "rgba(66, 66, 66, 0.35)",
+            "outlineWidth": 0.5,
+            "fallbackColor": "#e0e0e0",
+            "empty": {
+                "label": "No applicable NbS",
+                "color": "#e0e0e0",
+                "showInLegend": true
+            },
+            "hover": {
+                "strokeColor": "#212121",
+                "strokeWidth": 3
+            },
+            "selected": {
+                "strokeColor": "#e53935",
+                "strokeWidth": 5
+            },
+            "legend": {
+                "sort": "count",
+                "labelJoin": ", "
+            }
+        }
     }
 ]
