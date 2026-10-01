@@ -192,7 +192,7 @@
         "legendMode": "categories",
         "legendSwatch": "square",
         "categoryStyle": {
-            "attribute": "nbs_list_majority",
+            "attribute": "nbs_desc_list_majority",
             "match": "exact",
             "delimiter": ";",
             "colors": {

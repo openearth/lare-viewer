@@ -115,6 +115,9 @@
       "process": {
         "identifier": "lare-uom",
         "trigger": "component",
+        "loadingText": "Calculating units of measurement…",
+        "errorText": "The UOM calculation could not be completed.",
+        "loadingIndicator": "both",
         "inputs": [
           {
             "id": "session_id",
@@ -206,6 +209,9 @@
       "process": {
         "identifier": "lare-uomkcs",
         "trigger": "component",
+        "loadingText": "Calculating KCS risk…",
+        "errorText": "The KCS risk calculation could not be completed.",
+        "loadingIndicator": "both",
         "inputs": [
           {
             "id": "session_id",
