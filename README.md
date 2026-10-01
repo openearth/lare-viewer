@@ -270,12 +270,15 @@ Only active when `enabled: true`. Markdown file must live under `src/config/` (l
 | `mapClick` | Region selected while step is open |
 | `stepComplete` | Step completes (payload from children) |
 
-Optional process fields for `stepOpen`:
+Optional process fields:
 
 | Field | Purpose |
 |--------|---------|
-| `rerun` | `"always"` (default) or `"onInputChange"` — skip re-execute when inputs are unchanged and the last run succeeded |
-| `loadingText` / `errorText` | Status UI in the submenu while the process runs |
+| `rerun` | `"always"` (default) or `"onInputChange"` — skip re-execute when inputs are unchanged and the last run succeeded (`stepOpen`) |
+| `loadingText` / `errorText` | Status copy while the process runs / on failure |
+| `loadingIndicator` | `"drawer"` (default), `"button"`, or `"both"` — where to show the loading spinner. Errors always use the drawer (with Retry). Button loading applies to `NumberInput` calc / `ProcessRunButton` when `trigger` is `component`. |
+
+Status UI applies to **`stepOpen` and `component`** process triggers (shared `SubMenu` status). Omit `loadingIndicator` → drawer only (backward compatible).
 
 **Step `onOpen`** — optional actions when the submenu opens (e.g. hide prior layers once):
 
