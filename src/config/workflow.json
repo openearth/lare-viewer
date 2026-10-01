@@ -398,7 +398,7 @@
                       "type": "fields",
                       "fields": [
                         {
-                          "attribute": "nbs_list_majority",
+                          "attribute": "nbs_desc_list_majority",
                           "title": "Most represented NbS (map colour)",
                           "format": {
                             "type": "list",
@@ -431,7 +431,7 @@
                         },
                         {
                           "title": "NbS",
-                          "attribute": "nbs_list_{n}",
+                          "attribute": "nbs_desc_list_{n}",
                           "format": {
                             "type": "list",
                             "delimiter": ";",
