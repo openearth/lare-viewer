@@ -19,7 +19,7 @@ function serializeLegendOptions (options) {
 }
 
 /** Rewrite GWC WMTS URLs to WMS and strip a trailing `?`. */
-export function resolveWmsLegendBaseUrl (rawUrl) {
+function resolveWmsLegendBaseUrl (rawUrl) {
   if (!rawUrl) return undefined
 
   let wmsUrl = rawUrl

@@ -159,10 +159,7 @@
     return mapStore.getLayerCategoryRows(layerId)
   }
 
-  /**
-   * HTML category chrome when legendMode is categories, unless a WMS JSON
-   * source failed — then fall back to the PNG GetLegendGraphic image.
-   */
+  /** Prefer HTML category rows; fall back to PNG if JSON legend fetch failed. */
   function usesHtmlCategoryLegend (layer) {
     if (layer.legendMode !== 'categories') return false
     const data = mapStore.layerCategories[layer.id]
@@ -182,7 +179,7 @@
 
   function legendBodyStyle (layer) {
     if (layer.legendMode === 'categories') {
-      // Opt-in scroll cap (e.g. long CORINE lists); omit for short NbS legends.
+      // Only cap height when configured (long class lists); omit for short legends.
       if (layer.legendBodyMaxHeight == null) return undefined
       return { maxHeight: `${ layer.legendBodyMaxHeight }px` }
     }
@@ -225,6 +222,13 @@
   flex-direction: row-reverse;
   align-items: flex-end;
   gap: 12px;
+  /* Transparent gaps must not block map pan/zoom (same pattern as FeatureInfoPanel) */
+  pointer-events: none;
+}
+
+.legend-button,
+.legend-item-card {
+  pointer-events: auto;
 }
 
 .legend-panel {
@@ -233,6 +237,7 @@
   /* Padding keeps elevation shadows inside the overflow box (otherwise they look cropped) */
   padding: 8px;
   margin: -8px;
+  pointer-events: none;
 }
 
 .legend-panel--vertical {

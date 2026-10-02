@@ -430,7 +430,7 @@ Array of layer service definitions. Workflow LayerList entries should use the sa
 |--------|---------|
 | `showInLegend` | `false` hides from floating legend |
 | `legendMode` | `"categories"` → HTML swatch+label rows (vs default PNG GetLegendGraphic) |
-| `legendSource` | With `legendMode: "categories"`: omit → load classes from `categoryStyle` / WFS; `"getLegendGraphicJson"` → load from GeoServer GetLegendGraphic JSON (raster colormap). Opt-in only. |
+| `legendSource` | With `legendMode: "categories"`: omit → load classes from `categoryStyle` / WFS; `"getLegendGraphicJson"` → load from GeoServer GetLegendGraphic JSON (raster colormaps or vector style rules). Opt-in only. |
 | `legendHideNoData` | With JSON legend source: hide entries whose label matches `/nodata/i` (e.g. `999 - NODATA`) |
 | `legendSwatch` | `"square"` for polygon / land-cover legends (default circle) |
 | `legendLayout` | `"dense"` for wide GetLegendGraphic images |
@@ -442,7 +442,7 @@ Array of layer service definitions. Workflow LayerList entries should use the sa
 **HTML category legends**
 
 1. **Vector / process layers** — `legendMode: "categories"` plus `categoryStyle` (WFS tabulation, same colours as the map). Used by NbS Overview.
-2. **WMS raster layers** — `legendMode: "categories"` plus `legendSource: "getLegendGraphicJson"`. Colours and labels come from the live GeoServer style (no hard-coded CLC table). Display-only; filtering stays in `LayerAttributeFilter`. On fetch failure the panel falls back to the PNG legend.
+2. **WMS layers** — `legendMode: "categories"` plus `legendSource: "getLegendGraphicJson"`. Colours and labels come from the live GeoServer style (raster or vector). Display-only; filtering stays in `LayerAttributeFilter`. On fetch failure the panel falls back to the PNG legend.
 
 **`categoryStyle` highlights**
 

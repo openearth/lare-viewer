@@ -8,33 +8,26 @@ const DEFAULT_NODATA_LABEL_PATTERN = /nodata/i
 function extractSymbolizerColor (symbolizer) {
   if (!symbolizer || symbolizer.Text) return null
 
-  const polygon = symbolizer.Polygon
-  if (polygon?.fill) return String(polygon.fill)
-
-  const line = symbolizer.Line
-  if (line?.stroke) return String(line.stroke)
+  if (symbolizer.Polygon?.fill) return String(symbolizer.Polygon.fill)
+  if (symbolizer.Line?.stroke) return String(symbolizer.Line.stroke)
 
   const point = symbolizer.Point
   if (point?.fill) return String(point.fill)
-  const graphics = point?.graphics
-  if (Array.isArray(graphics) && graphics[0]?.fill) {
-    return String(graphics[0].fill)
-  }
+  const graphicFill = point?.graphics?.[0]?.fill
+  if (graphicFill) return String(graphicFill)
 
   return null
 }
 
 function parseRuleSymbolizerEntry (rule) {
-  const symbolizers = Array.isArray(rule?.symbolizers) ? rule.symbolizers : []
   const label = rule?.title || rule?.name || rule?.filter || ''
   if (!label) return null
 
-  for (const symbolizer of symbolizers) {
+  for (const symbolizer of rule?.symbolizers || []) {
     const color = extractSymbolizerColor(symbolizer)
     if (!color) continue
-    const value = rule?.name || rule?.title || String(label)
     return {
-      value,
+      value: rule?.name || rule?.title || String(label),
       label: String(label),
       color,
     }
@@ -42,19 +35,15 @@ function parseRuleSymbolizerEntry (rule) {
   return null
 }
 
-/**
- * Walk GeoServer GetLegendGraphic JSON (Raster colormaps and vector rules).
- */
+/** Parse GeoServer GetLegendGraphic JSON (Raster colormaps and vector rules). */
 export function parseGetLegendGraphicJson (data) {
   const entries = []
   const legends = Array.isArray(data?.Legend) ? data.Legend : []
 
   for (const legend of legends) {
-    const rules = Array.isArray(legend?.rules) ? legend.rules : []
-    for (const rule of rules) {
-      const symbolizers = Array.isArray(rule?.symbolizers) ? rule.symbolizers : []
+    for (const rule of legend?.rules || []) {
       let addedRaster = false
-      for (const symbolizer of symbolizers) {
+      for (const symbolizer of rule?.symbolizers || []) {
         const colormapEntries = symbolizer?.Raster?.colormap?.entries
         if (!Array.isArray(colormapEntries)) continue
         for (const entry of colormapEntries) {
@@ -80,12 +69,7 @@ export function parseGetLegendGraphicJson (data) {
   return entries
 }
 
-export function isNoDataLegendEntry (entry, pattern = DEFAULT_NODATA_LABEL_PATTERN) {
-  const label = entry?.label != null ? String(entry.label) : ''
-  return pattern.test(label)
-}
-
-export function filterLegendCategoryEntries (entries, {
+function filterLegendCategoryEntries (entries, {
   hideNoData = false,
   noDataLabelPattern = DEFAULT_NODATA_LABEL_PATTERN,
 } = {}) {
@@ -93,12 +77,12 @@ export function filterLegendCategoryEntries (entries, {
   const pattern = noDataLabelPattern instanceof RegExp
     ? noDataLabelPattern
     : new RegExp(String(noDataLabelPattern), 'i')
-  return entries.filter(entry => !isNoDataLegendEntry(entry, pattern))
+  return entries.filter(entry => !pattern.test(String(entry?.label || '')))
 }
 
 /**
  * Fetch and normalise WMS JSON legend classes for HTML category rows.
- * Opt-in via layer config: legendMode "categories" + legendSource "getLegendGraphicJson".
+ * Opt-in: legendMode "categories" + legendSource "getLegendGraphicJson".
  */
 export async function fetchWmsLegendCategories (layerConfig, {
   hideNoData = false,
@@ -115,9 +99,8 @@ export async function fetchWmsLegendCategories (layerConfig, {
     throw new Error(`HTTP ${ response.status }`)
   }
 
-  const data = await response.json()
   const entries = filterLegendCategoryEntries(
-    parseGetLegendGraphicJson(data),
+    parseGetLegendGraphicJson(await response.json()),
     { hideNoData, noDataLabelPattern },
   )
   if (entries.length === 0) {
@@ -130,10 +113,7 @@ export async function fetchWmsLegendCategories (layerConfig, {
 
   for (const entry of entries) {
     values.push(entry.value)
-    options.push({
-      value: entry.value,
-      label: entry.label,
-    })
+    options.push({ value: entry.value, label: entry.label })
     colorByValue[entry.value] = entry.color
   }
 
