@@ -6,6 +6,8 @@ export const LAYER_LEGEND_FIELDS = [
   'legendBodyMaxHeight',
   'legendExpanded',
   'legendSwatch',
+  'legendSource',
+  'legendHideNoData',
 ]
 
 export const LEGEND_UI_DEFAULTS = {

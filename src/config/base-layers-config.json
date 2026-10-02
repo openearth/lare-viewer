@@ -5,6 +5,10 @@
         "layer": "landuse:U2018_CLC2018_V2020_20u1_cog",
         "url": "https://desirmed.openearth.eu/geoserver/landuse/wms?",
         "format": "image/png",
+        "legendMode": "categories",
+        "legendSource": "getLegendGraphicJson",
+        "legendSwatch": "square",
+        "legendHideNoData": true,
         "legendLayout": "dense",
         "legendCardMaxWidth": 360,
         "legendBodyMaxHeight": 300,
@@ -181,7 +185,21 @@
         "id": "kcsRisk",
         "name": "Risk",
         "dynamic": true,
-        "format": "image/png"
+        "format": "image/png",
+        "legendMode": "categories",
+        "legendSource": "getLegendGraphicJson",
+        "legendSwatch": "square",
+        "legendHideNoData": true,
+        "legendLayout": "dense",
+        "legendCardMaxWidth": 360,
+        "legendBodyMaxHeight": 300,
+        "legendExpanded": true,
+        "legendOptions": {
+            "columns": 1,
+            "fontSize": 8,
+            "labelMargin": 12,
+            "dpi": 120
+        }
     },
     {
         "id": "nbsOverview",

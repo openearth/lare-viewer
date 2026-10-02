@@ -13,6 +13,8 @@ import {
   parsePairKey,
   tabulateCategories,
 } from '@/lib/category-style'
+import { LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON } from '@/lib/build-legend-url'
+import { fetchWmsLegendCategories } from '@/lib/fetch-wms-legend-categories'
 import { pickLayerLegendFields } from '@/lib/legend-config'
 import { useAppStore } from '@/stores/app'
 
@@ -390,6 +392,12 @@ export const useMapStore = defineStore('map', {
         return this.categoryLoadPromises[layerId]
       }
 
+      const layerConfig = this.layersConfig.find(cfg => cfg.id === layerId)
+      const legendSource = overrides.legendSource || layerConfig?.legendSource || null
+      if (legendSource === LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON) {
+        return this.ensureWmsJsonLegendCategories(layerId, overrides)
+      }
+
       const options = resolveCategoryLoadOptions(layerId, overrides, this.layersConfig)
       if (!options) return null
 
@@ -436,6 +444,53 @@ export const useMapStore = defineStore('map', {
             hierarchical: false,
             colorByValue: {},
             error: 'Unable to load categories.',
+          }
+          return this.layerCategories[layerId]
+        } finally {
+          delete this.categoryLoadPromises[layerId]
+        }
+      })()
+
+      this.categoryLoadPromises[layerId] = promise
+      return promise
+    },
+
+    /**
+     * Opt-in HTML legend from GeoServer GetLegendGraphic JSON (raster colormap).
+     * On failure, LayerLegend falls back to the PNG GetLegendGraphic image.
+     */
+    async ensureWmsJsonLegendCategories (layerId, overrides = {}) {
+      if (!layerId) return null
+      if (this.layerCategories[layerId]?.loaded) {
+        return this.layerCategories[layerId]
+      }
+      if (this.categoryLoadPromises[layerId]) {
+        return this.categoryLoadPromises[layerId]
+      }
+
+      const layerConfig = this.layersConfig.find(cfg => cfg.id === layerId)
+      if (!layerConfig?.url || !layerConfig?.layer) return null
+
+      const hideNoData = overrides.hideNoData !== undefined
+        ? overrides.hideNoData
+        : Boolean(layerConfig.legendHideNoData)
+
+      const promise = (async () => {
+        try {
+          const entry = await fetchWmsLegendCategories(layerConfig, { hideNoData })
+          this.layerCategories[layerId] = entry
+          return entry
+        } catch (error) {
+          console.error(`[map] Failed to load WMS JSON legend for ${ layerId }:`, error)
+          this.layerCategories[layerId] = {
+            loaded: true,
+            source: LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON,
+            values: [],
+            options: [],
+            groups: [],
+            hierarchical: false,
+            colorByValue: {},
+            error: 'Unable to load legend categories.',
           }
           return this.layerCategories[layerId]
         } finally {
@@ -557,6 +612,11 @@ export const useMapStore = defineStore('map', {
         delete this.layerCategories[slotId]
         delete this.categoryLoadPromises[slotId]
         if (merged.categoryStyle) {
+          this.ensureLayerCategories(slotId)
+        } else if (
+          merged.legendMode === 'categories'
+          && merged.legendSource === LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON
+        ) {
           this.ensureLayerCategories(slotId)
         }
         return

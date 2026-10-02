@@ -56,7 +56,7 @@
               :style="legendBodyStyle(layer)"
             >
               <div
-                v-if="layer.legendMode === 'categories'"
+                v-if="usesHtmlCategoryLegend(layer)"
                 class="legend-categories"
               >
                 <div
@@ -98,7 +98,7 @@
 <script setup>
   import { computed, ref, watch } from 'vue'
   import { useMapStore } from '@/stores/map'
-  import buildLegendUrl from '@/lib/build-legend-url'
+  import buildLegendUrl, { LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON } from '@/lib/build-legend-url'
   import { findWorkflowLayer } from '@/lib/find-workflow-layer'
   import { isDenseLegendLayout, LEGEND_UI_DEFAULTS } from '@/lib/legend-config'
   import navigationConfig from '@/config/workflow.json'
@@ -159,13 +159,33 @@
     return mapStore.getLayerCategoryRows(layerId)
   }
 
+  /**
+   * HTML category chrome when legendMode is categories, unless a WMS JSON
+   * source failed — then fall back to the PNG GetLegendGraphic image.
+   */
+  function usesHtmlCategoryLegend (layer) {
+    if (layer.legendMode !== 'categories') return false
+    const data = mapStore.layerCategories[layer.id]
+    if (
+      layer.legendSource === LEGEND_SOURCE_GET_LEGEND_GRAPHIC_JSON
+      && data?.error
+    ) {
+      return false
+    }
+    return true
+  }
+
   function isFillLegend (layer) {
     const cfg = mapStore.layersConfig.find(c => c.id === layer.id)
     return cfg?.vectorType === 'fill' || cfg?.categoryStyle?.geometry === 'fill'
   }
 
   function legendBodyStyle (layer) {
-    if (layer.legendMode === 'categories') return undefined
+    if (layer.legendMode === 'categories') {
+      // Opt-in scroll cap (e.g. long CORINE lists); omit for short NbS legends.
+      if (layer.legendBodyMaxHeight == null) return undefined
+      return { maxHeight: `${ layer.legendBodyMaxHeight }px` }
+    }
     const maxHeight = layer.legendBodyMaxHeight ?? LEGEND_UI_DEFAULTS.bodyMaxHeight
     return { maxHeight: `${ maxHeight }px` }
   }

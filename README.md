@@ -429,13 +429,20 @@ Array of layer service definitions. Workflow LayerList entries should use the sa
 | Field | Purpose |
 |--------|---------|
 | `showInLegend` | `false` hides from floating legend |
-| `legendMode` | `"categories"` → swatch legend from `categoryStyle` / WFS |
-| `legendSwatch` | `"square"` for polygon category legends (default circle) |
+| `legendMode` | `"categories"` → HTML swatch+label rows (vs default PNG GetLegendGraphic) |
+| `legendSource` | With `legendMode: "categories"`: omit → load classes from `categoryStyle` / WFS; `"getLegendGraphicJson"` → load from GeoServer GetLegendGraphic JSON (raster colormap). Opt-in only. |
+| `legendHideNoData` | With JSON legend source: hide entries whose label matches `/nodata/i` (e.g. `999 - NODATA`) |
+| `legendSwatch` | `"square"` for polygon / land-cover legends (default circle) |
 | `legendLayout` | `"dense"` for wide GetLegendGraphic images |
-| `legendCardMaxWidth`, `legendBodyMaxHeight`, `legendExpanded` | Card UX |
-| `legendOptions` | Passed into GeoServer `legend_options` (fontSize, columns, dpi, …) |
+| `legendCardMaxWidth`, `legendBodyMaxHeight`, `legendExpanded` | Card UX (`legendBodyMaxHeight` also caps long HTML category lists when set) |
+| `legendOptions` | Passed into GeoServer `legend_options` for PNG legends (also used if JSON legend fetch fails and the UI falls back to the image) |
 | `categoryStyle` | Client-side category colors for circle or fill layers |
 | `selectionStyle` | Optional durable outline for committed selection (`outline.selected`) |
+
+**HTML category legends**
+
+1. **Vector / process layers** — `legendMode: "categories"` plus `categoryStyle` (WFS tabulation, same colours as the map). Used by NbS Overview.
+2. **WMS raster layers** — `legendMode: "categories"` plus `legendSource: "getLegendGraphicJson"`. Colours and labels come from the live GeoServer style (no hard-coded CLC table). Display-only; filtering stays in `LayerAttributeFilter`. On fetch failure the panel falls back to the PNG legend.
 
 **`categoryStyle` highlights**
 
@@ -493,7 +500,7 @@ Change these per deployment (not via `workflow.json` today).
 | Blank map | `VITE_MAPBOX_TOKEN`; browser console |
 | Processes fail | `VITE_OGC_API_URL`; process id; CORS; network tab |
 | Layers missing | Browser-reachable GeoServer URL; layer name; `id` match between configs |
-| Legend empty | `showInLegend`; WMS GetLegendGraphic; or `legendMode: "categories"` + WFS |
+| Legend empty | `showInLegend`; WMS GetLegendGraphic PNG; or `legendMode: "categories"` (+ WFS / `categoryStyle`, or `legendSource: "getLegendGraphicJson"`) |
 | Filter / dim not working | `attributeFilter` + vector layer; `promoteId`; `categoryStyle` where needed |
 | Feature info never opens | Layer has `featureInfo` and is clickable for the active step |
 | Info dialog never shows | `infoDialog.enabled`; `showOnStart` / button; `remember` + `storageKey` |
