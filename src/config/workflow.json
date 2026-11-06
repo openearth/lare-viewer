@@ -11,6 +11,116 @@
     }
   },
   "legendStack": "horizontal",
+  "userSelectionsOverview": {
+    "enabled": true,
+    "title": "User selections",
+    "width": 250,
+    "left": 210,
+    "bottom": 24,
+    "expandedByDefault": true,
+    "regionSummary": {
+      "selectionKey": "regionSummary",
+      "variants": [
+        {
+          "when": {
+            "source": "store:app.selections.userCaseSelection",
+            "equals": "administration"
+          },
+          "attributes": [
+            "cntr_code",
+            "nuts_name",
+            "nuts_id"
+          ],
+          "separator": "; "
+        },
+        {
+          "when": {
+            "source": "store:app.selections.userCaseSelection",
+            "equals": "hydrobasin"
+          },
+          "attributes": [
+            "hybas_id"
+          ],
+          "separator": "; "
+        }
+      ]
+    },
+    "items": [
+      {
+        "id": "useCase",
+        "label": "Use case",
+        "source": "store:app.selections.userCaseSelection",
+        "visibleAfterStep": "userCaseSelection",
+        "display": {
+          "type": "optionLabel"
+        }
+      },
+      {
+        "id": "regionAdmin",
+        "label": "Selected region",
+        "source": "store:app.selections.regionSummary",
+        "visibleAfterStep": "regionSelection",
+        "when": {
+          "source": "store:app.selections.userCaseSelection",
+          "equals": "administration"
+        },
+        "display": {
+          "type": "text"
+        }
+      },
+      {
+        "id": "regionHydro",
+        "label": "Hydro basin ID",
+        "source": "store:app.selections.regionSummary",
+        "visibleAfterStep": "regionSelection",
+        "when": {
+          "source": "store:app.selections.userCaseSelection",
+          "equals": "hydrobasin"
+        },
+        "display": {
+          "type": "text"
+        }
+      },
+      {
+        "id": "archetype",
+        "label": "Landscape archetype",
+        "source": "store:app.selections.uomArchetype",
+        "visibleAfterStep": "uom",
+        "display": {
+          "type": "optionLabel"
+        }
+      },
+      {
+        "id": "uomSize",
+        "label": "Hexagon size",
+        "source": "store:app.selections.uomSize",
+        "visibleAfterStep": "uom",
+        "display": {
+          "type": "number",
+          "decimals": 0,
+          "unit": "m²"
+        }
+      },
+      {
+        "id": "hazard",
+        "label": "Hazard",
+        "source": "store:app.selections.hazardSelection",
+        "visibleAfterStep": "kcsSelection",
+        "display": {
+          "type": "optionLabel"
+        }
+      },
+      {
+        "id": "kcs",
+        "label": "Key community system",
+        "source": "store:app.selections.kcsSelection",
+        "visibleAfterStep": "kcsSelection",
+        "display": {
+          "type": "optionLabel"
+        }
+      }
+    ]
+  },
   "steps": [
     {
       "id": "userCaseSelection",
@@ -182,6 +292,7 @@
             "step": 100000,
             "defaultValue": 1000,
             "defaultValueSource": "store:map.suggestedUom",
+            "selectionKey": "uomSize",
             "requiresCalcCondition": true,
             "calcConditionSource": "store:app.selections.uomArchetype",
             "flashWhenEnabled": true,
