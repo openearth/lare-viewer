@@ -1,5 +1,5 @@
 /**
- * Config-driven UserSelectionsOverview: resolve rows and durable region summary.
+ * Config-driven UserSelectionsOverview helpers.
  * Opt-in via workflow.json → userSelectionsOverview.
  */
 
@@ -7,17 +7,16 @@ import workflowConfig from '@/config/workflow.json'
 import { resolveInputValue } from '@/lib/ogc-process/resolve-input'
 import { formatAttributeValue, isBlank } from '@/lib/format-value'
 
-export function selectionId (value) {
+function selectionId (value) {
   if (value != null && typeof value === 'object' && !Array.isArray(value) && 'id' in value) {
     return value.id
   }
   return value
 }
 
-export function matchesWhen (when, context) {
+function matchesWhen (when, context) {
   if (!when?.source) return true
-  const raw = resolveInputValue(when.source, context)
-  const id = selectionId(raw)
+  const id = selectionId(resolveInputValue(when.source, context))
   if (when.equals !== undefined) {
     return id != null && String(id) === String(when.equals)
   }
@@ -25,15 +24,14 @@ export function matchesWhen (when, context) {
 }
 
 /** From `store:app.selections.foo` → `foo`. */
-export function selectionKeyFromSource (source) {
+function selectionKeyFromSource (source) {
   if (!source || typeof source !== 'string') return null
   const prefix = 'store:app.selections.'
   if (!source.startsWith(prefix)) return null
-  const rest = source.slice(prefix.length)
-  return rest.split('.')[0] || null
+  return source.slice(prefix.length).split('.')[0] || null
 }
 
-export function findOptionsBySelectionKey (selectionKey, config = workflowConfig) {
+function findOptionsBySelectionKey (selectionKey, config = workflowConfig) {
   if (!selectionKey) return []
   for (const step of config.steps || []) {
     for (const comp of step.components || []) {
@@ -48,9 +46,7 @@ export function findOptionsBySelectionKey (selectionKey, config = workflowConfig
 }
 
 function formatOverviewValue (raw, display, item, config = workflowConfig) {
-  const type = display?.type || 'text'
-
-  if (type === 'optionLabel') {
+  if (display?.type === 'optionLabel') {
     const id = selectionId(raw)
     if (id == null || id === '') {
       return { displayValue: '', blank: true }
@@ -68,11 +64,7 @@ function formatOverviewValue (raw, display, item, config = workflowConfig) {
     }
   }
 
-  // Reuse FeatureInfo formatting (number + unit, list, lookup, text)
-  const format = type === 'text' && !display?.type
-    ? null
-    : display
-  return formatAttributeValue(raw, format)
+  return formatAttributeValue(raw, display || null)
 }
 
 /**
@@ -95,8 +87,12 @@ export function resolveOverviewRows (overviewConfig, context, {
     }
     if (!matchesWhen(item.when, context)) continue
 
-    const raw = resolveInputValue(item.source, context)
-    const formatted = formatOverviewValue(raw, item.display || null, item, config)
+    const formatted = formatOverviewValue(
+      resolveInputValue(item.source, context),
+      item.display || null,
+      item,
+      config,
+    )
     if (formatted.blank || isBlank(formatted.displayValue)) continue
 
     rows.push({
@@ -108,9 +104,7 @@ export function resolveOverviewRows (overviewConfig, context, {
   return rows
 }
 
-/**
- * Write a formatted region summary into app.selections (durable; not live activeRegion).
- */
+/** Persist a formatted region string in app.selections (not live activeRegion). */
 export function commitRegionSummary (overviewConfig, context, properties) {
   const cfg = overviewConfig?.regionSummary
   if (!cfg?.selectionKey || !properties || typeof properties !== 'object') {

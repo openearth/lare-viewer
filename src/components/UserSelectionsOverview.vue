@@ -35,7 +35,6 @@
             class="user-selections-overview__row"
           >
             <span class="user-selections-overview__label">{{ row.label }}:</span>
-            {{ ' ' }}
             <span class="user-selections-overview__value">{{ row.displayValue }}</span>
           </div>
         </v-card-text>
@@ -45,7 +44,7 @@
 </template>
 
 <script setup>
-  import { computed, ref, watch } from 'vue'
+  import { computed, ref } from 'vue'
   import { storeToRefs } from 'pinia'
   import workflowConfig from '@/config/workflow.json'
   import { useAppStore } from '@/stores/app'
@@ -55,7 +54,7 @@
   const overviewConfig = workflowConfig.userSelectionsOverview || null
   const appStore = useAppStore()
   const mapStore = useMapStore()
-  const { selections, completedSteps } = storeToRefs(appStore)
+  const { completedSteps } = storeToRefs(appStore)
 
   const isEnabled = computed(() => overviewConfig?.enabled === true)
   const title = computed(() => overviewConfig?.title || 'User selections')
@@ -72,35 +71,22 @@
     }
   })
 
-  const resolveContext = computed(() => ({
-    payload: {},
-    stores: { app: appStore, map: mapStore },
-  }))
-
   const rows = computed(() => {
     if (!isEnabled.value) return []
-    // Depend on selections + completedSteps so rows update after confirm
-    void selections.value
-    void completedSteps.value
-    return resolveOverviewRows(overviewConfig, resolveContext.value, {
-      completedSteps: completedSteps.value,
-      config: workflowConfig,
-    })
+    return resolveOverviewRows(
+      overviewConfig,
+      { payload: {}, stores: { app: appStore, map: mapStore } },
+      {
+        completedSteps: completedSteps.value,
+        config: workflowConfig,
+      },
+    )
   })
-
-  watch(
-    () => rows.value.length,
-    (len, prev) => {
-      if (len > 0 && (prev === 0 || prev == null) && overviewConfig?.expandedByDefault !== false) {
-        expanded.value = true
-      }
-    },
-  )
 </script>
 
 <style scoped>
 .user-selections-overview {
-  /* Same left chrome column as SubMenu (viewport-fixed overlay) */
+  /* Same left column as SubMenu */
   position: fixed;
   z-index: 1005;
   pointer-events: none;
@@ -148,6 +134,9 @@
 }
 
 .user-selections-overview__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.35em;
   font-size: 0.8125rem;
   line-height: 1.35;
   white-space: normal;

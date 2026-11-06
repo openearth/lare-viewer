@@ -141,6 +141,7 @@
 
 <style scoped>
 .custom-navigation-drawer {
+  /* 24px bottom matches UserSelectionsOverview default bottom inset */
   max-height: calc(100% - 50px - 24px);
   margin-top: 50px;
   margin-left: 10px;

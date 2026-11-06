@@ -408,6 +408,7 @@
 
     if (props.commitSelectionOnConfirm) {
       mapStore.commitSelectionFromActive()
+      // Optional durable region text for UserSelectionsOverview
       const overview = workflowConfig.userSelectionsOverview
       if (overview?.enabled && overview.regionSummary) {
         commitRegionSummary(
