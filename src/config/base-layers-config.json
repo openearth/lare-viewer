@@ -27,6 +27,7 @@
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "application/vnd.mapbox-vector-tile",
         "promoteId": "nuts_id",
+        "showInLegend": false,
         "paint": {
             "fill-color": [
                 "case",
@@ -104,6 +105,7 @@
         "layer": "topography:hybas_eu_lev12_v1c",
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "application/vnd.mapbox-vector-tile",
+        "showInLegend": false,
         "paint": {
             "fill-color": [
                 "case",
@@ -173,13 +175,15 @@
         "layer": "topography:hybas_eu_lev12_v1c",
         "url": "https://desirmed.openearth.eu/geoserver/gwc/service/wmts?",
         "format": "image/png",
+        "showInLegend": false,
         "minZoom": 0
     },
     {
         "id": "uomGrid",
         "name": "Units of measurement",
         "dynamic": true,
-        "format": "image/png"
+        "format": "image/png",
+        "showInLegend": false
     },
     {
         "id": "kcsRisk",

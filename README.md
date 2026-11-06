@@ -78,8 +78,8 @@ npm run lint
 
 ## How the app works
 
-1. **`App.vue`** loads `workflow.json`. Optional `initialSetup.process` with `trigger: "onStart"` runs once. First step opens automatically if `steps` is non-empty. Global overlays (`FeatureInfoPanel`, `LayerLegend`, `InfoDialog`) mount always but **only activate when config enables them**.
-2. **`NavigationDrawer.vue`** lists each step and mounts one **`SubMenu`** per step.
+1. **`App.vue`** loads `workflow.json`. Optional `initialSetup.process` with `trigger: "onStart"` runs once. First step opens automatically if `steps` is non-empty. Global overlays (`FeatureInfoPanel`, `LayerLegend`, `InfoDialog`, `UserSelectionsOverview`) mount always but **only activate when config enables them**.
+2. **`NavigationDrawer.vue`** lists each step, mounts one **`SubMenu`** per step, and hosts **`UserSelectionsOverview`** (same left column as SubMenu).
 3. **`SubMenu.vue`** loads components by name via `import.meta.glob('@/components/*.vue')`, handles Confirm, and runs processes according to `process.trigger`.
 4. **`views/Home.vue` → `MapComponent.vue`** hosts the map; the **map store** builds layers from `base-layers-config.json` and tracks selection / filters / dynamic layers.
 
@@ -182,6 +182,7 @@ Omit these keys → no committed outline (other products unchanged). Interactive
 | `initialSetup` | Restart button and/or bootstrap `process` |
 | `legendStack` | `"vertical"` (default) or `"horizontal"` for the floating legend |
 | `infoDialog` | Optional markdown dialog (see below) |
+| `userSelectionsOverview` | Optional bottom-left summary of confirmed selections (see below) |
 | `steps` | Ordered wizard steps |
 
 ### `initialSetup`
@@ -213,6 +214,23 @@ Only active when `enabled: true`. Markdown file must live under `src/config/` (l
 | `storageKey` | Optional; default `viewer:info-dialog-seen` |
 | `contentFile` | e.g. `"info-dialog.md"` |
 | `title`, `closeLabel`, `width`, `height` | Dialog chrome |
+
+### `userSelectionsOverview`
+
+Opt-in strip under the SubMenu column. Hidden until at least one configured item is visible. Rows appear only after the step named in `visibleAfterStep` is in `completedSteps` (i.e. after that step’s Confirm / finish). Omit the block or set `enabled: false` → no UI (other products unchanged).
+
+| Field | Meaning |
+|--------|---------|
+| `enabled` | Master switch |
+| `title` | Card header (default `"User selections"`) |
+| `width`, `left`, `bottom` | Layout (defaults `250` / `210` / `24`, matching SubMenu) |
+| `expandedByDefault` | Expand/collapse like a legend card (default `true`) |
+| `regionSummary` | On region Confirm (`commitSelectionOnConfirm`), write a durable formatted string into `app.selections[selectionKey]` from map feature properties. `variants[]` use `when` + `attributes` + `separator` (e.g. admin vs hydro). |
+| `items[]` | Rows: `label`, `source` (`store:app.selections.…`), `visibleAfterStep`, optional `when` (`source` + `equals`), `display` |
+
+**`display` types:** `text` (default); `optionLabel` (resolve id → name from the SelectionList options that share the same selection key, or inline `options`); `number` / `list` / `lookup` via `format-value.js` (e.g. `{ "type": "number", "unit": "m²" }`).
+
+**NumberInput:** optional `selectionKey` writes the value into `app.selections` so overview / processes can read it.
 
 ### Each step
 
@@ -321,7 +339,7 @@ Reference by **file name without `.vue`**. Unknown names are skipped.
 |-----------|-------------|
 | `SelectionList` | Dropdown → `app.selections[selectionKey]`. Options may carry extra fields for processes/layers. Supports `condition` / `conditionSource`, `disabledUntilCondition`, `confirmSelection`, `flashWhenEnabled` |
 | `LayerList` | Layer switches. Per layer: `id`, `name`, `active`, `clickable`, `condition`, `propertiesBox`, `flashWhenEnabled`, plus optional `attributeFilter`, `featureInfo`, `relatedGeometry` (see below) |
-| `NumberInput` | Number field; optional Calculate → `run-process`. `defaultValueSource` uses the same `store:` / `processResult:` syntax as processes |
+| `NumberInput` | Number field; optional Calculate → `run-process`. Optional `selectionKey` → `app.selections`. `defaultValueSource` uses the same `store:` / `processResult:` syntax as processes |
 | `ProcessRunButton` | Explicit run button; `requiredSelections`, `flashWhenEnabled`; emits `run-process` |
 | `ActiveFeatureProperties` | Usually via LayerList `propertiesBox` — compact selected-feature card |
 
@@ -333,6 +351,7 @@ Reference by **file name without `.vue`**. Unknown names are skipped.
 | `RelatedGeometry` | Driven by LayerList `relatedGeometry` config |
 | `FeatureInfoPanel` | Driven by LayerList `featureInfo` |
 | `LayerLegend` | Floating legend for visible layers |
+| `UserSelectionsOverview` | Driven by top-level `userSelectionsOverview`; durable `app.selections` + `completedSteps` |
 | `InfoDialog` | Driven by top-level `infoDialog` |
 | `FlashHighlight` | Used internally for attention pulses |
 
@@ -479,7 +498,7 @@ Change these per deployment (not via `workflow.json` today).
 3. **Component name = filename** — `"SelectionList"` loads `SelectionList.vue`. Typos fail silently (component missing).
 4. **Confirm stays disabled** — Check `requiredSelections`, `confirmationSource`, map click, or whether a `component`-triggered process returned a result.
 5. **`removeLayer` + same `storeResultAs` key** — Previous result is snapshotted before overwrite so old dynamic layers can be removed. Prefer explicit `fromResultKey` over relying on “clear everything”.
-6. **Global panels vs step components** — `FeatureInfoPanel` / `InfoDialog` / `RelatedGeometry` are not added to `components[]`; they react to config on layers / top-level workflow.
+6. **Global panels vs step components** — `FeatureInfoPanel` / `InfoDialog` / `UserSelectionsOverview` / `RelatedGeometry` are not added to `components[]`; they react to config on layers / top-level workflow.
 7. **Selection objects vs process scalars** — UI may store `{ id, name, … }`; process inputs coerce to `id`.
 8. **Env at build time** — `VITE_*` values are baked in at `npm run build`; changing the server env later without rebuilding does nothing.
 
